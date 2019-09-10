@@ -17,7 +17,12 @@
 #ifndef __UGUI_H
 #define __UGUI_H
 
-#include "system.h"
+#include "stdio.h"
+#include "stdlib.h"
+#include "unistd.h"
+#include "string.h"
+#include "stdbool.h"
+#include "pthread.h"
 
 /* Enable color mode */
 #define USE_COLOR_RGB888   // RGB = 0xFF,0xFF,0xFF

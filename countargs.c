@@ -1,7 +1,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <types.h>
+#include <linux/types.h>
 
 // Counts the arguments in a comma seperated list.
 // Used be the tglWidgetRegister #define
