@@ -40,17 +40,19 @@ The library is divdied up into groups:
 
 #### Tiger_gl API
 
+	Function table.
+
 	Function | Description
 	-------- | -----------
-	tglInit | First call ti initialize the **tiger_gl** library.
-	tglFbOpen | Opens the linux frame buffer device.  Normally called by the **tglIint** function.
-	tglSetAutoUpdate | Enables or disable auto update.
+	tglInit | First call ti initialize the tiger_gl library.
+	tglFbOpen | Opens the linux frame buffer device.  Normally called by the tglIint function.
+	tglSetAutoUpdate | Enables or disable auto updating.
 	tglFbClose | Restores screen and closes the frame buffer device.
 	tglFbGetFbp | Returns the linux frame buffer pointer to memory.
 	tglFbGetWidth | Returns the screens width in pixels.
 	tglFbGetHeight | Returns the screens height in pixels.
 	tglFbGetBpp | Returns the screens bits per pixel. (always 32 bits)
-	tglFbUpdate | Updates the complete screen, normally only called by the **tiger_gl** library.
+	tglFbUpdate | Updates the complete screen, normally only called by the tiger_gl library.
 	tglFbUpdateArea | Updates a rectangle area on the screen. Normally called by the update thread.
 	tglFindTouchDevice | Use the lsinput program to find the touch screen device.  Currently supports 3 screen types, see code for screens.
 
