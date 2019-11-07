@@ -130,7 +130,7 @@ void tglImagerPrintInfo(TGLBITMAP *img, char *title) | Print information about i
 Function | Description
 -------- | -----------
 int tglTouchInit(char *device, int screenWidth, int screenHeight, int touchWidth, int touchHeight, int pressureFlag, int rotate) | Noramlly called by tglInit()
-void tglTouchGetEvent(void) | Gets the next touch eventi.  Normally called but touch thread.
+void tglTouchGetEvent(void) | Gets the next touch event.  Normally called by touch thread.
 
 Function | Description
 -------- | -----------
