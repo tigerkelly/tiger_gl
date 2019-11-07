@@ -42,7 +42,7 @@ The library is divdied up into groups:
 
 Function | Description
 -------- | -----------
-tglInit | First call ti initialize the tiger_gl library.
+tglInit | First call to initialize the tiger_gl library.
 tglFbOpen | Opens the linux frame buffer device.  Normally called by the tglIint function.
 tglSetAutoUpdate | Enables or disable auto updating.
 tglFbClose | Restores screen and closes the frame buffer device.
@@ -53,6 +53,109 @@ tglFbGetBpp | Returns the screens bits per pixel. (always 32 bits)
 tglFbUpdate | Updates the complete screen, normally only called by the tiger_gl library.
 tglFbUpdateArea | Updates a rectangle area on the screen. Normally called by the update thread.
 tglFindTouchDevice | Use the lsinput program to find the touch screen device.  Currently supports 3 screen types, see code for screens.
+
+Function | Description
+-------- | -----------
+tglScreenCreate | Used to create the first screen.
+tglScreenLoad | Used to load a screen image directly to the screen.
+tglScreenSave | Save the current screen to an image file.
+tglScreeDelete | Deletes the screen. Not normally called.
+tglScreengetBitmap | Returns the screen image as a pointer to TGLBITMAP.
+tglScreeGetPixels | Returns the pointer to the screem image pixels.
+tglScreengetScanLine | Returns a pointer to the row given.
+tglScreenGetType | Returns the image type of the screen.
+tglScreenGetColorsUsed | Returns the number of colors used.
+tglScreenGetBpp | Returns pointer to screen image.
+tglScreenGetWidth | Returns screen width in pixels.
+tglScreenGetHeight | Returns screen height in pixels.
+tglScreenGetPitch | Returns width of screen in bytes rounded to the next 32 bit boundary.
+tglScreenRotate | Rotate screen by angle.
+tglScreenFlipHorizontal | Flips screen horizontal
+tglScreenFlipVertical | Flips screen vertical
+tglScreenGetSize | Returns the size of the DIB-element
+tglScreenRescale | Rescales the image.
+tglScreenPrintInfo | Print screen information.
+tglScreenPutPixel | Called by all functons needing to draw something to the screen.
+tglScreePutChar | Draws a single characrter to the screen.
+tglScreePutString | Draws a string of characrters to the screen.
+tglScreenFill | fills screen with a color.
+
+
+Function | Description
+-------- | -----------
+tglDrawLine | Draws a line on the screen.
+tglDrawRect | Draws a rectangle on the screen.
+tglDrawRoudRect | Draws a rounded rectangle on the screen.
+tglDrawFillRect | Draws a filled rectanlge on the screen.
+tglDrawFillRoudRect | Draws a filled rounded rectangle on the screen.
+tglDrawCircle | Draws a circle on the screen.
+tglDrawFillCircle | Draws a filled circle on the screen.
+tglDrawMeshRect | Draws a meshed rectangle on the screen.
+tglDrawArc | Draws a arc on the screen.
+tglDrawImage | Draws an image to the screen with ot without transparency.
+tglDrawVideoImage | Used to support drawing frames of video to the screen.
+
+Function | Description
+-------- | -----------
+tglImageCreate | Allocate an image in memory.
+tglImageLoad | Load an image into memory.
+tglImageSetTransparent | Set an image to support tranparency.
+tglImageSetTransTable | Set images transparency table.
+tglImageGetBg | Get images background color.
+tglImageLoadMem | Load an image from memory.
+tglImageSave | Save an image to disk.
+tglImageDelete | Delete an image in memory.
+tglImageSaveRaw | Save image to disk in raw format.
+tglImageComposite | Adds a composite to the image.
+tglImageClone | Clone an image.
+tglImageGetScanLine | Get pointer to image row.
+tglImageGetBits | Get pointer to image data.
+tglImageGetBPP | Get images bit per pixel.
+tglImageGetType | Get image type.
+tglImageGetColorsUsed | Get number of colors used by image.
+tglImageGetWidth | Get width of image.
+tglImageGetHeight | Get height of image.
+tglImageGetPitch | Get pitch of image.
+tglImageGetLine | Get scan line size in bytes.
+tglImageRotate | Rotate image by angle.
+tglImageFlipHorizontal | Flip image horizontal
+tglImageFlipVertical | Flip image vertical
+tglImageGetSize | Get size of image.
+tglImageRescale | Rescale image.
+tglImageConvertTo32 | Convert image to 32 bpp
+tglImagerPrintInfo | Print information about image. Normally called by tiger_gl library.
+tglTouchGetEvent | Gets the next touch eventi.  Normally called but touch thread.
+
+Function | Description
+-------- | -----------
+tglTouchInit | Noramlly called by tglInit()
+
+Function | Description
+-------- | -----------
+tglWidgetRegister | A #define which calls the tglWidgetRegisterV function.
+tglWidgetRegisterV | Registers widgets and calls their paint routines.  Use tglWidgetRegister function instead.
+tglWidgetSetData | Sets data for a widget, used by the programmer to pass data.
+tglWidgetGetData | Retrives the data of a widget.
+tglWidgetEvent | Used by the touch thread to notify a widget of an event.
+tglWidgetDelete | Deletes a widget.
+tglWidgetImage | Create an image widget.
+tglWidgetAddCallback | Adds a callback to the widget. see example program tiger_gl-test
+tglWidgetAddIcon | Add an Icon to the widget if it supports it.
+tglWidgetSetFont | Set the font used by a widget.
+tglWidgetSetFgColor | Set foreground color of widget.
+tglWidgetSetFgColor | Set background color of widget.
+tglWidgetSetFgBgColor | Set foreground and background colors of widget.
+tglWidgetSetButtonText | Set the text of the button widget.
+tglWidgetButton | Create a button widget.
+tglWidgetSetLabelText | Set text of a label widget.
+tglWidgetLabel | Create a label widget.
+tglWidgetCheckbox | Create a checkbox widget.
+tglWidgetSetCheckboxText | Set the text of the checkbox widget.
+tglWidgetRadio | Create a radio button.
+tglWidgetSetRadioText | Set text of a radio button.
+tglWidgetSetradioGroup | Set radio button group id.
+tglWidgetSetSelected | Set widget as selected.
+
 
 ### Building library
 
