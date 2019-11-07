@@ -113,15 +113,15 @@ void tglWidgetEvent(int x, int y, int p, int t) {
 				}
 			}
 
-			if (tws->widgetType == WIDGET_CHECKBOX) {
+			if (tws->widgetType == WIDGET_RADIO) {
 				if ((t & TOUCH_START) == TOUCH_START) {
 					tws->checked = tws->checked == true ? false : true;
-					_paintCheckbox(tws, tws->checked);
+					_paintRadio(tws, tws->checked);
 					if (tws->touchAction == TOUCH_DOWN) {
 						flag = 1;
 					}
 				} else if ((t & TOUCH_STOP) == TOUCH_STOP) {
-					_paintCheckbox(tws, tws->checked);
+					_paintRadio(tws, tws->checked);
 					if (tws->touchAction == TOUCH_UP) {
 						flag = 1;
 					}
@@ -305,6 +305,20 @@ void _paintButton(TglWidget *tw, bool flag) {
 
 	_addAreaW(tw);
 
+}
+
+void tglWidgetSetButtonText(TglWidget *tw, char *text) {
+	 if (text != NULL) {
+        if (tw->text != NULL)
+            free(tw->text);
+        tw->text = strdup(text);
+    } else {
+        if (tw->text != NULL)
+            free(tw->text);
+        tw->text = NULL;
+    }
+    _paintButton(tw, false);
+    _addAreaW(tw);
 }
 
 void tglWidgetTouched(TglWidget *tw) {

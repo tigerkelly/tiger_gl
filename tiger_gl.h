@@ -355,6 +355,7 @@ TglWidget *tglWidgetLabel(char *text, int x, int y, int width, int height);
 TglWidget *tglWidgetCheckbox(char *text, int x, int y, int width, int height);
 // TglWidget *tglWidgetTextbox(char *text, int x, int y, int width, int height);
 TglWidget *tglWidgetRadio(char *text, int x, int y, int width, int height);
+void tglWidgetSetButtonText(TglWidget *tw, char *text);
 void tglWidgetSetSelected(TglWidget *tw, bool selected);
 void tglWidgetSetRadioGroup(TglWidget *tw, short groupId);
 void tglWidgetSetFont(TglWidget *tw, char *fontName);

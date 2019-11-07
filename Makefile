@@ -3,9 +3,7 @@ CC=gcc
 
 SRC=tiger_gl.c touch_gl.c screen_gl.c image_gl.c widgets_gl.c draw_gl.c ugui.c ugui_fonts.c cqueue.c llist.c twlist.c timer.c countargs.c
 
-# FTCFLAGS=-I/usr/local/include/freetype2 -I/usr/include/libpng16 -I/usr/include/harfbuzz -I/usr/include/glib-2.0 -I/usr/lib/arm-linux-gnueabihf/glib-2.0/include
-
-CFLAGS =-std=gnu99 -g -Wall -I./ -I./utils/incs -I/usr/include/directfb -I/usr/include/directfb/direct -I/usr/lib/gcc/arm-linux-gnueabihf/8/include
+CFLAGS =-std=gnu99 -g -Wall -I./ -I../utils/incs -I/usr/include/directfb -I/usr/include/directfb/direct -I/usr/lib/gcc/arm-linux-gnueabihf/8/include
 
 ARC=libtiger_gl.a
 

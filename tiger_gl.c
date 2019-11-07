@@ -360,6 +360,10 @@ void tglFindTouchDevice(char *deviceName) {
 			if (strncmp(line, "/dev/", 5) == 0)
 				strcpy(device, line);
 			else {
+				/* Elecrow 5 inch=QDtech MPI5001
+				 * Elecrow 7 inch=QDtech MPI7002
+				 * MSD-12301=TSTP MTouch, A 12.3" touch screen from Newsoul.
+				 */
 				if (strncmp(line, "name", 4) == 0) {
 					if (strstr(line, "QDtech MPI5001") != NULL) {
 						dev = device;
