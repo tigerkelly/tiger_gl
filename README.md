@@ -57,105 +57,106 @@ void tglFindTouchDevice(char *deviceName) | Use the lsinput program to find the 
 
 Function | Description
 -------- | -----------
-tglScreenCreate | Used to create the first screen.
-tglScreenLoad | Used to load a screen image directly to the screen.
-tglScreenSave | Save the current screen to an image file.
-tglScreeDelete | Deletes the screen. Not normally called.
-tglScreengetBitmap | Returns the screen image as a pointer to TGLBITMAP.
-tglScreeGetPixels | Returns the pointer to the screem image pixels.
-tglScreengetScanLine | Returns a pointer to the row given.
-tglScreenGetType | Returns the image type of the screen.
-tglScreenGetColorsUsed | Returns the number of colors used.
-tglScreenGetBpp | Returns pointer to screen image.
-tglScreenGetWidth | Returns screen width in pixels.
-tglScreenGetHeight | Returns screen height in pixels.
-tglScreenGetPitch | Returns width of screen in bytes rounded to the next 32 bit boundary.
-tglScreenRotate | Rotate screen by angle.
-tglScreenFlipHorizontal | Flips screen horizontal
-tglScreenFlipVertical | Flips screen vertical
-tglScreenGetSize | Returns the size of the DIB-element
-tglScreenRescale | Rescales the image.
-tglScreenPrintInfo | Print screen information.
-tglScreenPutPixel | Called by all functons needing to draw something to the screen.
-tglScreePutChar | Draws a single characrter to the screen.
-tglScreePutString | Draws a string of characrters to the screen.
-tglScreenFill | fills screen with a color.
+int tglScreenCreate(int x, int y, int width, int height, int bpp) | Used to create the first screen.
+int tglScreenLoad(char *fileName) | Used to load a screen image directly to the screen.
+int tglScreenSave(char *fileName) | Save the current screen to an image file.
+int tglScreeDelete(void) | Deletes the screen. Not normally called.
+TGLBITMAP *tglScreengetBitmap(void) | Returns the screen image as a pointer to TGLBITMAP.
+BYTE *tglScreeGetPixels(void) | Returns the pointer to the screem image pixels.
+BYTE *tglScreenGetScanLine(int row) | Returns a pointer to the row given.
+int tglScreenGetType(void) | Returns the image type of the screen.
+int tglScreenGetColorsUsed(void)| Returns the number of colors used.
+int tglScreenGetBpp(void) | Returns pointer to screen image.
+int tglScreenGetWidth(void) | Returns screen width in pixels.
+int tglScreenGetHeight(void) | Returns screen height in pixels.
+int tglScreenGetPitch(void) | Returns width of screen in bytes rounded to the next 32 bit boundary.
+int tglScreenGetLine(void) | Get scan line length in pixels
+int tglScreenRotate(double angle | Rotate screen by angle.
+int tglScreenFlipHorizontal(void) | Flips screen horizontal
+int tglScreenFlipVertical(void) | Flips screen vertical
+int tglScreenGetSize(void) | Returns the size of the DIB-element
+int tglScreenRescale(char *fileName) | Rescales the image.
+void tglScreenPrintInfo(char *title) | Print screen information.
+void tglScreenPutPixel(int x, int y, int c) | Called by all functons needing to draw something to the screen.
+void tglScreePutChar(char c, int x, int y, unsigned int fc, unsigned int bc | Draws a single characrter to the screen.
+void tglScreePutString(int x, int y, char *text, unsigned int fc, unsigned int bc) | Draws a string of characrters to the screen.
+void tglScreenFill(unsigned int c) | fills screen with a color.
 
 
 Function | Description
 -------- | -----------
-tglDrawLine | Draws a line on the screen.
-tglDrawRect | Draws a rectangle on the screen.
-tglDrawRoudRect | Draws a rounded rectangle on the screen.
-tglDrawFillRect | Draws a filled rectanlge on the screen.
-tglDrawFillRoudRect | Draws a filled rounded rectangle on the screen.
-tglDrawCircle | Draws a circle on the screen.
-tglDrawFillCircle | Draws a filled circle on the screen.
-tglDrawMeshRect | Draws a meshed rectangle on the screen.
-tglDrawArc | Draws a arc on the screen.
-tglDrawImage | Draws an image to the screen with ot without transparency.
-tglDrawVideoImage | Used to support drawing frames of video to the screen.
+void tglDrawLine(int xs, int ys, int xe, int ye, unsigned int c) | Draws a line on the screen.
+void tglDrawRect(int x, int y, int width, int height, unsigned int c) | Draws a rectangle on the screen.
+void tglDrawRoudRect(int x, int y, int width, int height, int radius, unsigned int c) | Draws a rounded rectangle on the screen.
+void tglDrawFillRect(int x, int y, int width, int height, unsigned int c) | Draws a filled rectanlge on the screen.
+void tglDrawFillRoudRect(int x, int y, int width, int height, unsigned int c) | Draws a filled rounded rectangle on the screen.
+void tglDrawCircle(int x, int y, int radius, unsigned int c) | Draws a circle on the screen.
+void tglDrawFillCircle(int x, int y, int radius, unsigned int c) | Draws a filled circle on the screen.
+void tglDrawMeshRect(int x, int y, int width, int height, unsigned int c) | Draws a meshed rectangle on the screen.
+void tglDrawArc( int x, int y, int radius, int sec, unsigned int c) | Draws a arc on the screen.
+void tglDrawImage(int x, int y, TGLBITMAP *img, bool transparency) | Draws an image to the screen with ot without transparency.
+void tglDrawVideoImage(TglWidget *tw, TGLBITMAP *img) | Used to support drawing frames of video to the screen.
 
 Function | Description
 -------- | -----------
-tglImageCreate | Allocate an image in memory.
-tglImageLoad | Load an image into memory.
-tglImageSetTransparent | Set an image to support tranparency.
-tglImageSetTransTable | Set images transparency table.
-tglImageGetBg | Get images background color.
-tglImageLoadMem | Load an image from memory.
-tglImageSave | Save an image to disk.
-tglImageDelete | Delete an image in memory.
-tglImageSaveRaw | Save image to disk in raw format.
-tglImageComposite | Adds a composite to the image.
-tglImageClone | Clone an image.
-tglImageGetScanLine | Get pointer to image row.
-tglImageGetBits | Get pointer to image data.
-tglImageGetBPP | Get images bit per pixel.
-tglImageGetType | Get image type.
-tglImageGetColorsUsed | Get number of colors used by image.
-tglImageGetWidth | Get width of image.
-tglImageGetHeight | Get height of image.
-tglImageGetPitch | Get pitch of image.
-tglImageGetLine | Get scan line size in bytes.
-tglImageRotate | Rotate image by angle.
-tglImageFlipHorizontal | Flip image horizontal
-tglImageFlipVertical | Flip image vertical
-tglImageGetSize | Get size of image.
-tglImageRescale | Rescale image.
-tglImageConvertTo32 | Convert image to 32 bpp
-tglImagerPrintInfo | Print information about image. Normally called by tiger_gl library.
-tglTouchGetEvent | Gets the next touch eventi.  Normally called but touch thread.
+TGLBITMAP *tglImageCreate(int x, int y, int width, int height, int bpp) | Allocate an image in memory.
+TGLBITMAP *tglImageLoad(char *fileName) | Load an image into memory.
+void tglImageSetTransparent(TGLBITMAP *img, bool flag) | Set an image to support tranparency.
+void tglImageSetTransTable(TGLBITMAP *img, BYTE *table, int count) | Set images transparency table.
+void tglImageGetBg(TGLBITMAP *img, TGLRGB *rgb) | Get images background color.
+TGLBITMAP *tglImageLoadMem(unsigned char *mem, int memLength) | Load an image from memory.
+int tglImageSave(TGLBITMAP * img, char *fileName) | Save an image to disk.
+int tglImageDelete(TGLBITMAP *img) | Delete an image in memory.
+int tglImageSaveRaw(unsigned char *bits, int width, int height, int bpp, char *fileName) | Save image to disk in raw format.
+TGLBITMAP *tglImageComposite(TGLBITMAP *img, unsigned int fc) | Adds a composite to the image.
+TGLBITMAP *tglImageClone(TGLBITMAP *img) | Clone an image.
+BYTE *tglImageGetScanLine(TGLBITMAP *img, int row) | Get pointer to image row.
+unisgned char *tglImageGetBits(TGLBITMAP *img) | Get pointer to image data.
+unsigned tglImageGetBPP(TGLBITMAP *img) | Get images bit per pixel.
+int tglImageGetType(TGLBITMAP *img) | Get image type.
+int tglImageGetColorsUsed(TGLBITMAP *img)  | Get number of colors used by image.
+int tglImageGetWidth(TGLBITMAP *img)| Get width of image.
+int tglImageGetHeight(TGLBITMAP *img) | Get height of image.
+nt unsigned tglImageGetPitch(TGLBITMAP *img) | Get pitch of image.
+unsigned tglImageGetLine(TGLBITMAP *img) | Get scan line size in bytes.
+TGLBITMAP *tglImageRotate(TGLBITMAP *img, double angle) | Rotate image by angle.
+int tglImageFlipHorizontal(TGLBITMAP *img) | Flip image horizontal
+int tglImageFlipVertical(TGLBITMAP *img) | Flip image vertical
+unsigned tglImageGetSize(TGLBITMAP *img) | Get size of image.
+TGLBITMAP *tglImageRescale(TGLBITMAP *img, int width, int height, TglFilter filter) | Rescale image.
+TGLBITMAP *tglImageConvertTo32(TGLBITMAP *img) | Convert image to 32 bpp
+void tglImagerPrintInfo(TGLBITMAP *img, char *title) | Print information about image. Normally called by tiger_gl library.
 
 Function | Description
 -------- | -----------
-tglTouchInit | Noramlly called by tglInit()
+int tglTouchInit(char *device, int screenWidth, int screenHeight, int touchWidth, int touchHeight, int pressureFlag, int rotate) | Noramlly called by tglInit()
+void tglTouchGetEvent(void) | Gets the next touch eventi.  Normally called but touch thread.
 
 Function | Description
 -------- | -----------
-tglWidgetRegister | A #define which calls the tglWidgetRegisterV function.
-tglWidgetRegisterV | Registers widgets and calls their paint routines.  Use tglWidgetRegister function instead.
-tglWidgetSetData | Sets data for a widget, used by the programmer to pass data.
-tglWidgetGetData | Retrives the data of a widget.
-tglWidgetEvent | Used by the touch thread to notify a widget of an event.
-tglWidgetDelete | Deletes a widget.
-tglWidgetImage | Create an image widget.
-tglWidgetAddCallback | Adds a callback to the widget. see example program tiger_gl-test
-tglWidgetAddIcon | Add an Icon to the widget if it supports it.
-tglWidgetSetFont | Set the font used by a widget.
-tglWidgetSetFgColor | Set foreground color of widget.
-tglWidgetSetFgColor | Set background color of widget.
-tglWidgetSetFgBgColor | Set foreground and background colors of widget.
-tglWidgetSetButtonText | Set the text of the button widget.
-tglWidgetButton | Create a button widget.
-tglWidgetSetLabelText | Set text of a label widget.
-tglWidgetLabel | Create a label widget.
-tglWidgetCheckbox | Create a checkbox widget.
-tglWidgetSetCheckboxText | Set the text of the checkbox widget.
-tglWidgetRadio | Create a radio button.
-tglWidgetSetRadioText | Set text of a radio button.
-tglWidgetSetradioGroup | Set radio button group id.
-tglWidgetSetSelected | Set widget as selected.
+int tglWidgetRegister(...) | A #define which calls the tglWidgetRegisterV function. Comma seperated list of TglWidget *.
+int tglWidgetRegisterV(int count, ...) | Registers widgets and calls their paint routines.  Use tglWidgetRegister function instead.
+void tglWidgetSetData(TglWidget *tw, char * data) | Sets data for a widget, used by the programmer to pass data.
+void char *tglWidgetGetData(TglWidget *tw) | Retrives the data of a widget.
+tglWidgetEvent(int x, int y, int p, int t) | Used by the touch thread to notify a widget of an event.
+void tglWidgetDelete(TglWidget *tw) | Deletes a widget.
+TglWidget *tglWidgetImage(int x, int y, int width, int height) | Create an image widget.
+void tglWidgetAddCallback(TglWidget *tw, void (*eCallback)(struct _tglWidget_ *tw, int x, int y, int p), TouchAction action) | Adds a callback to the widget. see example program tiger_gl-test
+void tglWidgetAddIcon(TglWidget *tw, char *iconName) | Add an Icon to the widget if it supports it.
+void tglWidgetSetFont(TglWidget *tw, char *fontName) | Set the font used by a widget.
+void tglWidgetSetFgColor(TglWidget *tw, int fgColor) | Set foreground color of widget.
+void tglWidgetSetBgColor(TglWidget *tw, int bgColor) | Set background color of widget.
+void tglWidgetSetFgBgColor(TglWidget *tw, int fgColor, TglWidget *tw, int bgColor) | Set foreground and background colors of widget.
+void tglWidgetSetButtonText(TglWidget *tw, char *text) | Set the text of the button widget.
+TglWidget *tglWidgetButton(char *text, int x, int y, int width, int height) | Create a button widget.
+void tglWidgetSetLabelText(TglWidget *tw, char *text)| Set text of a label widget.
+TglWidget *tglWidgetLabel(char *text, int x, int y, int width, int height) | Create a label widget.
+TglWidget *tglWidgetCheckbox(char *text, int x, int y, int width, int height) | Create a checkbox widget.
+tglWidgetSetCheckboxText(TglWidget *tw, char *text) | Set the text of the checkbox widget.
+TglWidget *tglWidgetRadio(char *text, int x, int y, int width, int height) | Create a radio button.
+void tglWidgetSetRadioText(char *text, int x, int y, int width, int height) | Set text of a radio button.
+void tglWidgetSetRadioGroup(TglWidget *tw, short groupId) | Set radio button group id.
+void tglWidgetSetSelected(TglWidget *tw, bool selected) | Set widget as selected.
 
 
 ### Building library
