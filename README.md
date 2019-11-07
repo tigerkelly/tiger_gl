@@ -40,8 +40,8 @@ The library is divdied up into groups:
 
 #### Tiger_gl API
 
-	Function            | Description
-	------------------- | -------------------------------------------------------------
+	Function | Description
+	-------- | -----------
 	tglInit | First call ti initialize the **tiger_gl** library.
 	tglFbOpen | Opens the linux frame buffer device.  Normally called by the **tglIint** function.
 	tglSetAutoUpdate | Enables or disable auto update.
