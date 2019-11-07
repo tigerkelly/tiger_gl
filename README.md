@@ -42,17 +42,18 @@ The library is divdied up into groups:
 
 Function | Description
 -------- | -----------
-tglInit | First call to initialize the tiger_gl library.
-tglFbOpen | Opens the linux frame buffer device.  Normally called by the tglIint function.
-tglSetAutoUpdate | Enables or disable auto updating.
-tglFbClose | Restores screen and closes the frame buffer device.
-tglFbGetFbp | Returns the linux frame buffer pointer to memory.
-tglFbGetWidth | Returns the screens width in pixels.
-tglFbGetHeight | Returns the screens height in pixels.
-tglFbGetBpp | Returns the screens bits per pixel. (always 32 bits)
-tglFbUpdate | Updates the complete screen, normally only called by the tiger_gl library.
-tglFbUpdateArea | Updates a rectangle area on the screen. Normally called by the update thread.
-tglFindTouchDevice | Use the lsinput program to find the touch screen device.  Currently supports 3 screen types, see code for screens.
+int tglInit(char *device, int width, int height) | First call to initialize the tiger_gl library.
+int tglFbOpen(char *device) | Opens the linux frame buffer device.  Normally called by the tglIint function.
+void tglSetAutoUpdate(int flag) | Enables or disable auto updating.
+void tglFbPrintInfo(void) | Prints information about FB.
+void tglFbClose(void) | Restores screen and closes the frame buffer device.
+unsigned char *tglFbGetFbp(void) | Returns the linux frame buffer pointer to memory.
+int tglFbGetWidth(void) | Returns the screens width in pixels.
+int tglFbGetHeight(void) | Returns the screens height in pixels.
+int tglFbGetBpp(void) | Returns the screens bits per pixel. (always 32 bits)
+void tglFbUpdate(void) | Updates the complete screen, normally only called by the tiger_gl library.
+void tglFbUpdateArea(unsigned char *buf, int bx, int by, int bw, int bh) | Updates a rectangle area on the screen. Normally called by the update thread.
+void tglFindTouchDevice(char *deviceName) | Use the lsinput program to find the touch screen device.  Currently supports 3 screen types, see code for screens.
 
 Function | Description
 -------- | -----------
