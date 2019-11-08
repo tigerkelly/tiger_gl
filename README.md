@@ -43,7 +43,7 @@ The library is divdied up into groups:
 Function | Description
 -------- | -----------
 int tglInit(char *device, int width, int height) | First call to initialize the tiger_gl library.
-int tglFbOpen(char *device) | Opens the linux frame buffer device.  Normally called by the tglIint function.
+int tglFbOpen(char *device) | Opens the linux frame buffer device.  Normally called by the tglIinit function.
 void tglSetAutoUpdate(int flag) | Enables or disable auto updating.
 void tglFbPrintInfo(void) | Prints information about FB.
 void tglFbClose(void) | Restores screen and closes the frame buffer device.
