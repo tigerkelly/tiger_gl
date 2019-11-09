@@ -28,15 +28,15 @@ pthread_t touchEvent;
 pthread_t touchEvent;
 
 void *_touchThread(void *param);
-int getTouchSample(int *rawX, int *rawY, int *rawPressure);
-void getTouchScreenDetails(int *screenXmin,int *screenXmax,int *screenYmin,int *screenYmax);
+int getTouchSample(uint16_t *rawX, uint16_t *rawY, uint16_t *rawPressure);
+void getTouchScreenDetails(uint16_t *screenXmin,uint16_t *screenXmax,uint16_t *screenYmin,uint16_t *screenYmax);
 
 extern TglInfo *_tglInfo;
-extern void tglWidgetEvent(int x, int y, int p, int t);
+extern void tglWidgetEvent(uint16_t x, uint16_t y, uint16_t p, uint16_t t);
 
 int tglTouchInit(char *device, 
-		int screenWidth, int screenHeight, int touchWidth, int touchHeight,
-		int pressureFlag, int rotate) {
+		uint16_t screenWidth, uint16_t screenHeight, uint16_t touchWidth, uint16_t touchHeight,
+		bool pressureFlag, bool rotate) {
 
 	_tglInfo->touchDevice = strdup(device);
 	
@@ -78,9 +78,9 @@ void tglTouchStopEvent() {
 
 void tglTouchGetEvent() {
  
-	int rawX;
-	int rawY;
-	int rawPressure;
+	uint16_t rawX;
+	uint16_t rawY;
+	uint16_t rawPressure;
 
 	int r = 0;
 	if ((r = getTouchSample(&rawX, &rawY, &rawPressure)) > 0) {
@@ -221,7 +221,7 @@ void getTouchScreenDetails(int *screenXmin,int *screenXmax,int *screenYmin,int *
 #endif
 
 // Returns bit pattern of events.
-int getTouchSample(int *rawX, int *rawY, int *rawPressure) {
+int getTouchSample(uint16_t *rawX, uint16_t *rawY, uint16_t *rawPressure) {
 	int ret = 0;
 	size_t rb;					// how many bytes were read
 	struct input_event ev;

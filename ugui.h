@@ -348,7 +348,7 @@ typedef struct
 /* -------------------------------------------------------------------------------- */
 typedef struct
 {
-   void (*pset)(UG_S16,UG_S16,UG_COLOR);
+   void (*pset)(UG_S16, UG_S16, UG_COLOR, bool transparency);
    UG_S16 x_dim;
    UG_S16 y_dim;
    UG_TOUCH touch;
@@ -670,7 +670,7 @@ typedef struct
 /* -- PROTOTYPES                                                                 -- */
 /* -------------------------------------------------------------------------------- */
 /* Classic functions */
-UG_S16 UG_Init( UG_GUI* g, void (*p)(UG_S16,UG_S16,UG_COLOR), UG_S16 x, UG_S16 y );
+UG_S16 UG_Init( UG_GUI* g, void (*p)(UG_S16, UG_S16, UG_COLOR, bool transparency), UG_S16 x, UG_S16 y );
 UG_S16 UG_SelectGUI( UG_GUI* g );
 void UG_FontSelect( const UG_FONT* font );
 void UG_FillScreen( UG_COLOR c );
@@ -679,17 +679,13 @@ void UG_FillRoundFrame( UG_S16 x1, UG_S16 y1, UG_S16 x2, UG_S16 y2, UG_S16 r, UG
 void UG_DrawMesh( UG_S16 x1, UG_S16 y1, UG_S16 x2, UG_S16 y2, UG_COLOR c );
 void UG_DrawFrame( UG_S16 x1, UG_S16 y1, UG_S16 x2, UG_S16 y2, UG_COLOR c );
 void UG_DrawRoundFrame( UG_S16 x1, UG_S16 y1, UG_S16 x2, UG_S16 y2, UG_S16 r, UG_COLOR c );
-void UG_DrawPixel( UG_S16 x0, UG_S16 y0, UG_COLOR c );
+void UG_DrawPixel( UG_S16 x0, UG_S16 y0, UG_COLOR c, bool transparency );
 void UG_DrawCircle( UG_S16 x0, UG_S16 y0, UG_S16 r, UG_COLOR c );
 void UG_FillCircle( UG_S16 x0, UG_S16 y0, UG_S16 r, UG_COLOR c );
 void UG_DrawArc( UG_S16 x0, UG_S16 y0, UG_S16 r, UG_U8 s, UG_COLOR c );
 void UG_DrawLine( UG_S16 x1, UG_S16 y1, UG_S16 x2, UG_S16 y2, UG_COLOR c );
-#if(KW)
-void UG_PutString( UG_S16 x, UG_S16 y, char* str );
-#else
-void UG_PutString( UG_S16 x, UG_S16 y, char* str, UG_COLOR fc, UG_COLOR bc );
-#endif
-void UG_PutChar( char chr, UG_S16 x, UG_S16 y, UG_COLOR fc, UG_COLOR bc );
+void UG_PutString( UG_S16 x, UG_S16 y, char* str, UG_COLOR fc, UG_COLOR bc, bool transparency );
+void UG_PutChar( char chr, UG_S16 x, UG_S16 y, UG_COLOR fc, UG_COLOR bc, bool transparency );
 void UG_ConsolePutString( char* str );
 void UG_ConsoleSetArea( UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye );
 void UG_ConsoleSetForecolor( UG_COLOR c );

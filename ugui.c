@@ -51,7 +51,7 @@
 #include "ugui.h"
 
 /* Static functions */
-void _UG_PutChar( char chr, UG_S16 x, UG_S16 y, UG_COLOR fc, UG_COLOR bc, const UG_FONT* font);
+void _UG_PutChar( char chr, UG_S16 x, UG_S16 y, UG_COLOR fc, UG_COLOR bc, const UG_FONT* font, bool transparency);
 
 /* Pointer to the gui */
 static UG_GUI* gui;
@@ -81,11 +81,11 @@ char *UG_Version() {
 		"       See ugui.c for more info.\n";
 }
 
-UG_S16 UG_Init( UG_GUI* g, void (*p)(UG_S16,UG_S16,UG_COLOR), UG_S16 x, UG_S16 y )
+UG_S16 UG_Init( UG_GUI* g, void (*p)(UG_S16, UG_S16, UG_COLOR, bool transparency), UG_S16 x, UG_S16 y )
 {
 	UG_U8 i;
 
-	g->pset = (void(*)(UG_S16,UG_S16,UG_COLOR))p;
+	g->pset = (void(*)(UG_S16, UG_S16, UG_COLOR, bool transparency))p;
 	g->x_dim = x;
 	g->y_dim = y;
 	g->console.x_start = 4;
@@ -162,7 +162,7 @@ void UG_FillFrame( UG_S16 x1, UG_S16 y1, UG_S16 x2, UG_S16 y2, UG_COLOR c ) {
 
 	for( m=y1; m<=y2; m++ ) {
 		for( n=x1; n<=x2; n++ ) {
-			gui->pset(n,m,c);
+			gui->pset(n,m,c, false);
 		}
 	}
 }
@@ -225,7 +225,7 @@ void UG_DrawMesh( UG_S16 x1, UG_S16 y1, UG_S16 x2, UG_S16 y2, UG_COLOR c ) {
 
 	for( m=y1; m<=y2; m+=2 ) {
 		for( n=x1; n<=x2; n+=2 ) {
-			gui->pset(n,m,c);
+			gui->pset(n,m,c, false);
 		}
 	}
 }
@@ -263,8 +263,8 @@ void UG_DrawRoundFrame( UG_S16 x1, UG_S16 y1, UG_S16 x2, UG_S16 y2, UG_S16 r, UG
 	UG_DrawArc(x2-r, y2-r, r, 0xC0, c);
 }
 
-void UG_DrawPixel( UG_S16 x0, UG_S16 y0, UG_COLOR c ) {
-	gui->pset(x0,y0,c);
+void UG_DrawPixel( UG_S16 x0, UG_S16 y0, UG_COLOR c, bool transparency ) {
+	gui->pset(x0,y0,c, transparency);
 }
 
 void UG_DrawCircle( UG_S16 x0, UG_S16 y0, UG_S16 r, UG_COLOR c ) {
@@ -281,14 +281,14 @@ void UG_DrawCircle( UG_S16 x0, UG_S16 y0, UG_S16 r, UG_COLOR c ) {
 	y = 0;
 
 	while ( x >= y ) {
-		gui->pset(x0 - x, y0 + y, c);
-		gui->pset(x0 - x, y0 - y, c);
-		gui->pset(x0 + x, y0 + y, c);
-		gui->pset(x0 + x, y0 - y, c);
-		gui->pset(x0 - y, y0 + x, c);
-		gui->pset(x0 - y, y0 - x, c);
-		gui->pset(x0 + y, y0 + x, c);
-		gui->pset(x0 + y, y0 - x, c);
+		gui->pset(x0 - x, y0 + y, c, false);
+		gui->pset(x0 - x, y0 - y, c, false);
+		gui->pset(x0 + x, y0 + y, c, false);
+		gui->pset(x0 + x, y0 - y, c, false);
+		gui->pset(x0 - y, y0 + x, c, false);
+		gui->pset(x0 - y, y0 - x, c, false);
+		gui->pset(x0 + y, y0 + x, c, false);
+		gui->pset(x0 + y, y0 - x, c, false);
 
 		y++;
 		e += yd;
@@ -354,27 +354,27 @@ void UG_DrawArc( UG_S16 x0, UG_S16 y0, UG_S16 r, UG_U8 s, UG_COLOR c ) {
 	while ( x >= y ) {
 		// Q1
 		if ( s & 0x01 )
-			gui->pset(x0 + x, y0 - y, c);
+			gui->pset(x0 + x, y0 - y, c, false);
 		if ( s & 0x02 )
-			gui->pset(x0 + y, y0 - x, c);
+			gui->pset(x0 + y, y0 - x, c, false);
 
 		// Q2
 		if ( s & 0x04 )
-			gui->pset(x0 - y, y0 - x, c);
+			gui->pset(x0 - y, y0 - x, c, false);
 		if ( s & 0x08 )
-			gui->pset(x0 - x, y0 - y, c);
+			gui->pset(x0 - x, y0 - y, c, false);
 
 		// Q3
 		if ( s & 0x10 )
-			gui->pset(x0 - x, y0 + y, c);
+			gui->pset(x0 - x, y0 + y, c, false);
 		if ( s & 0x20 )
-			gui->pset(x0 - y, y0 + x, c);
+			gui->pset(x0 - y, y0 + x, c, false);
 
 		// Q4
 		if ( s & 0x40 )
-			gui->pset(x0 + y, y0 + x, c);
+			gui->pset(x0 + y, y0 + x, c, false);
 		if ( s & 0x80 )
-			gui->pset(x0 + x, y0 + y, c);
+			gui->pset(x0 + x, y0 + y, c, false);
 
 		y++;
 		e += yd;
@@ -406,7 +406,7 @@ void UG_DrawLine( UG_S16 x1, UG_S16 y1, UG_S16 x2, UG_S16 y2, UG_COLOR c ) {
 	drawx = x1;
 	drawy = y1;
 
-	gui->pset(drawx, drawy,c);
+	gui->pset(drawx, drawy,c, false);
 
 	if( dxabs >= dyabs ) {
 		for( n=0; n<dxabs; n++ ) {
@@ -416,7 +416,7 @@ void UG_DrawLine( UG_S16 x1, UG_S16 y1, UG_S16 x2, UG_S16 y2, UG_COLOR c ) {
 				drawy += sgndy;
 			}
 			drawx += sgndx;
-			gui->pset(drawx, drawy,c);
+			gui->pset(drawx, drawy,c, false);
 		}
 	} else {
 		for( n=0; n<dyabs; n++ ) {
@@ -426,12 +426,12 @@ void UG_DrawLine( UG_S16 x1, UG_S16 y1, UG_S16 x2, UG_S16 y2, UG_COLOR c ) {
 				drawx += sgndx;
 			}
 			drawy += sgndy;
-			gui->pset(drawx, drawy,c);
+			gui->pset(drawx, drawy,c, false);
 		}
 	}  
 }
 
-void UG_PutString( UG_S16 x, UG_S16 y, char* str, UG_COLOR fc, UG_COLOR bc ) {
+void UG_PutString( UG_S16 x, UG_S16 y, char* str, UG_COLOR fc, UG_COLOR bc, bool transparency ) {
 	UG_S16 xp,yp;
 	UG_U8 cw;
 	char chr;
@@ -454,14 +454,14 @@ void UG_PutString( UG_S16 x, UG_S16 y, char* str, UG_COLOR fc, UG_COLOR bc ) {
 			yp += gui->font->char_height+gui->char_v_space;
 		}
 
-		UG_PutChar(chr, xp, yp, fc, bc);
+		UG_PutChar(chr, xp, yp, fc, bc, transparency);
 
 		xp += cw + gui->char_h_space;
 	}
 }
 
-void UG_PutChar( char chr, UG_S16 x, UG_S16 y, UG_COLOR fc, UG_COLOR bc ) {
-	_UG_PutChar(chr,x,y,fc,bc,gui->font);
+void UG_PutChar( char chr, UG_S16 x, UG_S16 y, UG_COLOR fc, UG_COLOR bc, bool transparency ) {
+	_UG_PutChar(chr,x,y,fc,bc,gui->font, transparency);
 }
 
 void UG_ConsolePutString( char* str ) {
@@ -489,7 +489,7 @@ void UG_ConsolePutString( char* str ) {
 			UG_FillFrame(gui->console.x_start,gui->console.y_start,gui->console.x_end,gui->console.y_end,gui->console.back_color);
 		}
 
-		UG_PutChar(chr, gui->console.x_pos, gui->console.y_pos, gui->console.fore_color, gui->console.back_color);
+		UG_PutChar(chr, gui->console.x_pos, gui->console.y_pos, gui->console.fore_color, gui->console.back_color, false);
 		str++;
 	}
 }
@@ -536,7 +536,7 @@ void UG_FontSetVSpace( UG_U16 s ) {
 /* -------------------------------------------------------------------------------- */
 /* -- INTERNAL FUNCTIONS                                                         -- */
 /* -------------------------------------------------------------------------------- */
-void _UG_PutChar( char chr, UG_S16 x, UG_S16 y, UG_COLOR fc, UG_COLOR bc, const UG_FONT* font) {
+void _UG_PutChar( char chr, UG_S16 x, UG_S16 y, UG_COLOR fc, UG_COLOR bc, const UG_FONT* font, bool transparency) {
 	UG_U16 i,j,k,xo,yo,c,bn,actual_char_width;
 	UG_U8 b,bt;
 	UG_U32 index;
@@ -614,9 +614,9 @@ void _UG_PutChar( char chr, UG_S16 x, UG_S16 y, UG_COLOR fc, UG_COLOR bc, const 
 					b = font->p[index++];
 					for( k=0;(k<8) && c;k++ ) {
 						if( b & 0x01 ) {
-							gui->pset(xo,yo,fc);
+							gui->pset(xo,yo,fc, false);
 						} else {
-							gui->pset(xo,yo,bc);
+							gui->pset(xo,yo,bc, transparency);
 						}
 						b >>= 1;
 						xo++;
@@ -634,7 +634,7 @@ void _UG_PutChar( char chr, UG_S16 x, UG_S16 y, UG_COLOR fc, UG_COLOR bc, const 
 					color = ((((fc & 0xFF) * b + (bc & 0xFF) * (256 - b)) >> 8) & 0xFF) |//Blue component
 						((((fc & 0xFF00) * b + (bc & 0xFF00) * (256 - b)) >> 8)  & 0xFF00)|//Green component
 						((((fc & 0xFF0000) * b + (bc & 0xFF0000) * (256 - b)) >> 8) & 0xFF0000); //Red component
-					gui->pset(xo,yo,color);
+					gui->pset(xo,yo,color, transparency);
 					xo++;
 				}
 				index += font->char_width - actual_char_width;
@@ -645,6 +645,7 @@ void _UG_PutChar( char chr, UG_S16 x, UG_S16 y, UG_COLOR fc, UG_COLOR bc, const 
 }
 
 #if(0)
+
 void UG_WaitForUpdate( void ) {
 	gui->state |= UG_SATUS_WAIT_FOR_UPDATE;
 #ifdef USE_MULTITASKING    

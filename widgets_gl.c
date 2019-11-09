@@ -29,8 +29,9 @@ void _paintButton(TglWidget *tw, bool flag);
 void _paintCheckbox(TglWidget *tw, bool flag);
 void _paintRadio(TglWidget *tw, bool flag);
 //void _paintTextbox(TglWidget *tw, bool flag);
+void _paintProgressBar(TglWidget *tw, bool flag);
 
-int tglIsInside(TglWidget *tw, int x, int y) {
+int tglIsInside(TglWidget *tw, uint16_t x, uint16_t y) {
 
 	if (x >= tw->x && x < (tw->x + tw->width) && y >= tw->y && y < (tw->y + tw->height))
 		return 1;
@@ -74,7 +75,7 @@ char *tglWidgetGetData(TglWidget *tw) {
 	return tw->data;
 }
 
-void tglWidgetEvent(int x, int y, int p, int t) {
+void tglWidgetEvent(uint16_t x, uint16_t y, uint16_t p, uint16_t t) {
 	
 	int flag = 0;
 
@@ -206,7 +207,7 @@ void tglWidgetDelete(TglWidget *tw) {
 	free(tw);
 }
 
-TglWidget *tglWidgetImage(int x, int y, int width, int height) {
+TglWidget *tglWidgetImage(uint16_t x, uint16_t y, uint16_t width, uint16_t height) {
 	TglWidget *tw = NULL;
 
 	tw = (TglWidget *)calloc(1, sizeof(TglWidget));
@@ -225,7 +226,7 @@ TglWidget *tglWidgetImage(int x, int y, int width, int height) {
 
 // action - is whether you want the callback to occur at touch or release.
 // TOUCH_DOWN = touch, TOUCH_UP = release
-void tglWidgetAddCallback(TglWidget *tw, void (*eCallback)(struct _tglWidget_ *tw, int x, int y, int p), TouchAction action) {
+void tglWidgetAddCallback(TglWidget *tw, void (*eCallback)(struct _tglWidget_ *tw, uint16_t x, uint16_t y, uint16_t p), TouchAction action) {
 	tw->eCallback = eCallback;
 	tw->touchAction = action;
 }
@@ -293,11 +294,11 @@ void _paintButton(TglWidget *tw, bool flag) {
 		} else {
 			yp = ((tw->height - gf->char_height) / 2) + tw->y;
 		}
-		
+
 		if(flag)
-			tglDrawPutString(xp, yp, tw->text, tw->fgColor, tw->bgColor + 0x202020);
+			tglDrawPutString(xp, yp, tw->text, tw->fgColor, 0, true);
 		else
-			tglDrawPutString(xp, yp, tw->text, tw->fgColor, tw->bgColor + 0x202020);
+			tglDrawPutString(xp, yp, tw->text, tw->fgColor, 0, true);
 
 	}
 
@@ -334,7 +335,7 @@ void tglWidgetTouched(TglWidget *tw) {
 	tw->paintWidget(tw, 1);
 }
 
-TglWidget *tglWidgetButton(char *text, int x, int y, int width, int height) {
+TglWidget *tglWidgetButton(char *text, uint16_t x, uint16_t y, uint16_t width, uint16_t height) {
 	TglWidget *tw = NULL;
 
 	tw = (TglWidget *)calloc(1, sizeof(TglWidget));
@@ -343,6 +344,7 @@ TglWidget *tglWidgetButton(char *text, int x, int y, int width, int height) {
 
 	tw->widgetType = WIDGET_BUTTON;
 	tw->widgetId = _widgetId++;
+	tw->txtColor = TGL_COLOR_BLACK;
 	tw->x = x;
 	tw->y = y;
 	tw->width = width;
@@ -384,9 +386,9 @@ void _paintTextbox(TglWidget *tw, bool flag) {
 		int yp = ((tw->height - gf->char_height) / 2) + (tw->y + (gf->char_height / 2));
 		
 		if (tw->hasFocus == true)
-			tglDrawPutString(xp, yp, tw->text, tw->fgColor, TGL_COLOR_LIGHTGREEN);
+			tglDrawPutString(xp, yp, tw->text, tw->fgColor, TGL_COLOR_LIGHTGREEN, true);
 		else
-			tglDrawPutString(xp, yp, tw->text, tw->fgColor, tw->bgColor);
+			tglDrawPutString(xp, yp, tw->text, tw->fgColor, tw->bgColor, true);
 	}
 
 	tglSetAutoUpdate(TGL_AUTOUPDATE);
@@ -414,7 +416,7 @@ void tglWidgetSetTextboxText(TglWidget *tw, char *text) {
 	_addAreaW(tw);
 }
 
-TglWidget *tglWidgetTextbox(char *text, int x, int y, int width, int height) {
+TglWidget *tglWidgetTextbox(char *text, uint16_t x, uint16_t y, uint16_t width, uint16_t height) {
 	TglWidget *tw = NULL;
 
 	tw = (TglWidget *)calloc(1, sizeof(TglWidget));
@@ -423,6 +425,7 @@ TglWidget *tglWidgetTextbox(char *text, int x, int y, int width, int height) {
 
 	tw->widgetType = WIDGET_TEXTBOX;
 	tw->widgetId = _widgetId++;
+	tw->txtColor = TGL_COLOR_BLACK;
 	tw->x = x;
 	tw->y = y;
 	tw->width = width;
@@ -456,7 +459,7 @@ void _paintLabel(TglWidget *tw, bool flag) {
 		int xp = tw->x + 4;
 		int yp = ((tw->height - gf->char_height) / 2) + tw->y;
 		
-		tglDrawPutString(xp, yp, tw->text, tw->fgColor, tw->bgColor);
+		tglDrawPutString(xp, yp, tw->text, tw->fgColor, tw->bgColor, true);
 	}
 
 	tglSetAutoUpdate(TGL_AUTOUPDATE);
@@ -468,15 +471,19 @@ void tglWidgetSetFont(TglWidget *tw, char *fontName) {
 	tw->textFont = UG_FontSelectByName(fontName);
 }
 
-void tglWidgetSetFgColor(TglWidget *tw, int fgColor) {
+void tglWidgetSetTextColor(TglWidget *tw, uint32_t c) {
+	tw->txtColor = c;
+}
+
+void tglWidgetSetFgColor(TglWidget *tw, uint32_t fgColor) {
 	tw->fgColor = fgColor;
 }
 
-void tglWidgetSetBgColor(TglWidget *tw, int bgColor) {
+void tglWidgetSetBgColor(TglWidget *tw, uint32_t bgColor) {
 	tw->bgColor = bgColor;
 }
 
-void tglWidgetSetFgBgColor(TglWidget *tw, int fgColor, int bgColor) {
+void tglWidgetSetFgBgColor(TglWidget *tw, uint32_t fgColor, uint32_t bgColor) {
 	tglWidgetSetFgColor(tw, fgColor);
 	tglWidgetSetBgColor(tw, bgColor);
 }
@@ -495,7 +502,7 @@ void tglWidgetSetLabelText(TglWidget *tw, char *text) {
 	_addAreaW(tw);
 }
 
-TglWidget *tglWidgetLabel(char *text, int x, int y, int width, int height) {
+TglWidget *tglWidgetLabel(char *text, uint16_t x, uint16_t y, uint16_t width, uint16_t height) {
 	TglWidget *tw = NULL;
 
 	tw = (TglWidget *)calloc(1, sizeof(TglWidget));
@@ -504,6 +511,7 @@ TglWidget *tglWidgetLabel(char *text, int x, int y, int width, int height) {
 
 	tw->widgetType = WIDGET_LABEL;
 	tw->widgetId = _widgetId++;
+	tw->txtColor = TGL_COLOR_BLACK;
 	tw->x = x;
 	tw->y = y;
 	tw->width = width;
@@ -554,7 +562,7 @@ void _paintCheckbox(TglWidget *tw, bool flag) {
 		int xp = tw->x + tw->height + 4;
 		int yp = ((tw->height - gf->char_height) / 2) + tw->y;
 		
-		tglDrawPutString(xp, yp, tw->text, tw->fgColor, tw->bgColor);
+		tglDrawPutString(xp, yp, tw->text, tw->fgColor, tw->bgColor, true);
 	}
 
 	tglSetAutoUpdate(TGL_AUTOUPDATE);
@@ -576,7 +584,7 @@ void tglWidgetSetCheckboxText(TglWidget *tw, char *text) {
     _addAreaW(tw);
 }
 
-TglWidget *tglWidgetCheckbox(char *text, int x, int y, int width, int height) {
+TglWidget *tglWidgetCheckbox(char *text, uint16_t x, uint16_t y, uint16_t width, uint16_t height) {
 	 TglWidget *tw = NULL;
 
     tw = (TglWidget *)calloc(1, sizeof(TglWidget));
@@ -585,6 +593,7 @@ TglWidget *tglWidgetCheckbox(char *text, int x, int y, int width, int height) {
 
     tw->widgetType = WIDGET_CHECKBOX;
     tw->widgetId = _widgetId++;
+	tw->txtColor = TGL_COLOR_BLACK;
     tw->x = x;
     tw->y = y;
     tw->width = width;
@@ -626,7 +635,7 @@ void _paintRadio(TglWidget *tw, bool flag) {
 		int xp = tw->x + (tw->height - 20) + 4;
 		int yp = ((tw->height - gf->char_height) / 2) + tw->y;
 		
-		tglDrawPutString(xp, yp, tw->text, tw->fgColor, tw->bgColor);
+		tglDrawPutString(xp, yp, tw->text, tw->fgColor, tw->bgColor, true);
 	}
 
 	tglSetAutoUpdate(TGL_AUTOUPDATE);
@@ -648,7 +657,7 @@ void tglWidgetSetRadioText(TglWidget *tw, char *text) {
     _addAreaW(tw);
 }
 
-void tglWidgetSetRadioGroup(TglWidget *tw, short groupId) {
+void tglWidgetSetRadioGroup(TglWidget *tw, uint16_t groupId) {
 	tw->groupId = groupId;
 }
 
@@ -657,7 +666,7 @@ void tglWidgetSetSelected(TglWidget *tw, bool selected) {
 	_addAreaW(tw);
 }
 
-TglWidget *tglWidgetRadio(char *text, int x, int y, int width, int height) {
+TglWidget *tglWidgetRadio(char *text, uint16_t x, uint16_t y, uint16_t width, uint16_t height) {
 	 TglWidget *tw = NULL;
 
     tw = (TglWidget *)calloc(1, sizeof(TglWidget));
@@ -666,6 +675,7 @@ TglWidget *tglWidgetRadio(char *text, int x, int y, int width, int height) {
 
     tw->widgetType = WIDGET_RADIO;
     tw->widgetId = _widgetId++;
+	tw->txtColor = TGL_COLOR_BLACK;
     tw->x = x;
     tw->y = y;
     tw->width = width;
@@ -677,6 +687,78 @@ TglWidget *tglWidgetRadio(char *text, int x, int y, int width, int height) {
 		tw->text = strdup(text);
 	}
     tw->paintWidget = _paintRadio;
+
+    return tw;
+}
+
+void _paintProgressBar(TglWidget *tw, bool flag) {
+
+	tglSetAutoUpdate(TGL_NO_AUTOUPDATE);
+
+	tglDrawFillRect(tw->x, tw->y, tw->width, tw->height, TGL_COLOR_WHITE);
+	tglDrawRoundRect(tw->x+4, tw->y+4, tw->width-10, tw->height-10, 10, tw->fgColor);
+
+	if (tw->pbNum > 0) {
+		int n = tw->width-10;			// length of widget minus borders.
+		double w = (double)n / (double)tw->pbMax;
+		int p = (int)((double)tw->pbNum * w);
+		tglDrawFillRoundRect(tw->x+5, tw->y+5, p, tw->height-12, 10, tw->pbColor);
+	}
+
+	if (tw->pbText == true) {
+		if (tw->textFont == NULL)
+			tw->textFont = UG_GetFont("FONT_6x10");
+
+		UG_SetFont(tw->textFont);
+
+		UG_FONT *gf = tw->textFont;
+
+		char textNum[32];
+		sprintf(textNum, "%d%%", tw->pbNum);
+
+		int sw = (gf->char_width * strlen(textNum));
+		int xp = ((tw->width - sw) / 2) + tw->x;
+		int yp = ((tw->height - gf->char_height) / 2) + tw->y;
+
+		int txtColor = 0xffffff - tw->pbColor;
+
+		tglDrawPutString(xp, yp, textNum, txtColor, 0, true);
+	}
+
+	tglSetAutoUpdate(TGL_AUTOUPDATE);
+
+	_addAreaW(tw);
+}
+
+void tglWidgetSetProgressBarColor(TglWidget *tw, uint32_t c) {
+	tw->pbColor = c;
+}
+
+void tglWidgetSetProgressBarNum(TglWidget *tw, uint16_t num) {
+	tw->pbNum = num;
+}
+
+TglWidget *tglWidgetProgressBar(uint16_t x, uint16_t y, uint16_t width, uint16_t height, bool pbText, uint32_t c) {
+	 TglWidget *tw = NULL;
+
+    tw = (TglWidget *)calloc(1, sizeof(TglWidget));
+    if (tw == NULL)
+        return NULL;
+
+    tw->widgetType = WIDGET_PROGRESSBAR;
+    tw->widgetId = _widgetId++;
+	tw->txtColor = TGL_COLOR_BLACK;
+	tw->pbText = pbText;
+	tw->pbNum = 0;
+	tw->pbMax = 100;
+	tw->fgColor = TGL_COLOR_BLACK;
+	tw->bgColor = 0;
+	tw->pbColor = c;
+    tw->x = x;
+    tw->y = y;
+    tw->width = width;
+    tw->height = height;
+    tw->paintWidget = _paintProgressBar;
 
     return tw;
 }

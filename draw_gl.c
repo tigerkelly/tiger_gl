@@ -11,7 +11,7 @@ extern int dirtyAreaPoolQue;
 extern struct fb_var_screeninfo _vinfo;
 extern struct fb_fix_screeninfo _finfo;
 
-void _addArea(WidgetType type, int x, int y, int width, int height) {
+void _addArea(WidgetType type, uint16_t x, uint16_t y, uint16_t width, uint16_t height) {
 	DirtyArea *da = NULL;
 
 	ItemType it;
@@ -36,13 +36,13 @@ void _addAreaW(TglWidget *tw) {
 	_addArea(tw->widgetType, tw->x, tw->y, tw->width, tw->height);
 }
 
-void tglDrawLine(int xs, int ys, int xe, int ye, unsigned int c) {
+void tglDrawLine(uint16_t xs, uint16_t ys, uint16_t xe, uint16_t ye, uint32_t c) {
 	UG_DrawLine(xs, ys, xe, ye, c);
 	if(_tglInfo->autoUpdate)
 		_addArea(TGL_LINE, xs, ys, xe, ye);
 }
 
-void tglDrawRect(int x, int y, int width, int height, unsigned int c) {
+void tglDrawRect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint32_t c) {
 	if (_ts == NULL)
 		return;
 
@@ -53,7 +53,7 @@ void tglDrawRect(int x, int y, int width, int height, unsigned int c) {
 		_addArea(TGL_RECT, x, y, width, height);
 }
 
-void tglDrawRoundRect(int x, int y, int width, int height, int radius, unsigned int c) {
+void tglDrawRoundRect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t radius, uint32_t c) {
 	if (_ts == NULL)
 		return;
 
@@ -64,7 +64,7 @@ void tglDrawRoundRect(int x, int y, int width, int height, int radius, unsigned 
 		_addArea(TGL_RECT, x, y, width, height);
 }
 
-void tglDrawFillRect(int x, int y, int width, int height, unsigned int c) {
+void tglDrawFillRect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint32_t c) {
 	if (_ts == NULL)
 		return;
 
@@ -75,7 +75,7 @@ void tglDrawFillRect(int x, int y, int width, int height, unsigned int c) {
 		_addArea(TGL_RECT, x, y, width, height);
 }
 
-void tglDrawFillRoundRect(int x, int y, int width, int height, int radius, unsigned int c) {
+void tglDrawFillRoundRect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t radius, uint32_t c) {
 	if (_ts == NULL)
 		return;
 
@@ -86,7 +86,7 @@ void tglDrawFillRoundRect(int x, int y, int width, int height, int radius, unsig
 		_addArea(TGL_RECT, x, y, width, height);
 }
 
-void tglDrawCircle(int x, int y, int radius, unsigned int c) {
+void tglDrawCircle(uint16_t x, uint16_t y, uint16_t radius, uint32_t c) {
 	if (_ts == NULL)
 		return;
 
@@ -98,7 +98,7 @@ void tglDrawCircle(int x, int y, int radius, unsigned int c) {
 		_addArea(TGL_CIRCLE, x, y, radius, 0);
 }
 
-void tglDrawFillCircle(int x, int y, int radius, unsigned int c) {
+void tglDrawFillCircle(uint16_t x, uint16_t y, uint16_t radius, uint32_t c) {
 	if (_ts == NULL)
 		return;
 
@@ -110,35 +110,35 @@ void tglDrawFillCircle(int x, int y, int radius, unsigned int c) {
 		_addArea(TGL_CIRCLE, x, y, radius, 0);
 }
 
-void tglSetBgColor(int bg) {
+void tglSetBgColor(uint32_t bg) {
 	UG_SetBackcolor(bg);
 }
 
-void tglSetFgColor(int fg) {
+void tglSetFgColor(uint32_t fg) {
 	UG_SetForecolor(fg);
 }
 
-void tglDrawPutChar(char c, int x, int y, unsigned int fc, unsigned int bc) {
-	UG_PutChar(c, x, y, fc, bc);
+void tglDrawPutChar(char c, uint16_t x, uint16_t y, uint32_t fc, uint32_t bc, bool transparency) {
+	UG_PutChar(c, x, y, fc, bc, transparency);
 }
 
-void tglDrawPutString(int x, int y, char *text, unsigned int fc, unsigned int bc) {
-	UG_PutString(x, y, text, fc, bc);
+void tglDrawPutString(uint16_t x, uint16_t y, char *text, uint32_t fc, uint32_t bc, bool transparency) {
+	UG_PutString(x, y, text, fc, bc, transparency);
 }
 
-void tglDrawMeshRect(int x, int y, int width, int height, unsigned int c) {
+void tglDrawMeshRect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint32_t c) {
 	UG_DrawMesh(x, y, (x + width), (y + height), c);
 	if(_tglInfo->autoUpdate)
 		_addArea(TGL_RECT, x, y, width, height);
 }
 
-void tglDrawArc( int x, int y, int radius, int sec, unsigned int c) {
+void tglDrawArc( uint16_t x, uint16_t y, uint16_t radius, int sec, uint32_t c) {
 	UG_DrawArc(x, y, radius, sec, c);
 	if(_tglInfo->autoUpdate)
 		_addArea(TGL_ARC, x, y, radius, 0);
 }
 
-void tglDrawImage(int x, int y, TGLBITMAP *img, bool transparency) {
+void tglDrawImage(uint16_t x, uint16_t y, TGLBITMAP *img, bool transparency) {
 	if (img == NULL)
 		return;
 	

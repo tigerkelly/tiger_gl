@@ -16,10 +16,10 @@ extern DirtyArea *dirtyArea;
 extern int dirtyAreaQue;
 extern int dirtyAreaPoolQue;
 
-extern void _addArea(WidgetType type, int x, int y, int width, int height);
+extern void _addArea(WidgetType type, uint16_t x, uint16_t y, uint16_t width, uint16_t height);
 extern void _addAreaW(TglWidget *tw);
 
-int tglScreenCreate(int x, int y, int width, int height, int bpp) {
+int tglScreenCreate(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t bpp) {
 
 	_ts = (TglScreen *)calloc(1, sizeof(TglScreen));
 	if (_ts == NULL)
@@ -168,7 +168,7 @@ BYTE *tglScreenGetPixels() {
 	return FreeImage_GetBits(_ts->screen);
 }
 
-BYTE *tglScreenGetScanLine(int row) {
+BYTE *tglScreenGetScanLine(uint16_t row) {
 	if (_ts == NULL)
 		return NULL;
 
@@ -303,7 +303,7 @@ unsigned tglScreenGetSize() {
 	return FreeImage_GetDIBSize(_ts->screen);
 }
 
-int tglScreenRescale(int width, int height, TglFilter filter) {
+int tglScreenRescale(uint16_t width, uint16_t height, TglFilter filter) {
 	if (_ts == NULL)
 		return -1;
 
@@ -352,7 +352,7 @@ void tglScreenPrintInfo(char *title) {
 	printf("--------------\n");
 }
 
-void tglScreenPutPixel(short x, short y, unsigned int c) {
+void tglScreenPutPixel(short x, short y, uint32_t c, bool transparency) {
 	if (_ts == NULL)
 		return;
 
@@ -373,20 +373,26 @@ void tglScreenPutPixel(short x, short y, unsigned int c) {
 	int bytespp = tglScreenGetLine() / screenWidth;
 	BYTE *bits = tglScreenGetScanLine(y);
 	bits += (bytespp * x);
-	bits[FI_RGBA_RED] = (c >> (FI_RGBA_RED * 8)) & 0xff;
-	bits[FI_RGBA_GREEN] = (c >> (FI_RGBA_GREEN * 8)) & 0xff;
-	bits[FI_RGBA_BLUE] = (c >> (FI_RGBA_BLUE * 8)) & 0xff;
+	if (transparency == false) {
+		bits[FI_RGBA_RED] = (c >> (FI_RGBA_RED * 8)) & 0xff;
+		bits[FI_RGBA_GREEN] = (c >> (FI_RGBA_GREEN * 8)) & 0xff;
+		bits[FI_RGBA_BLUE] = (c >> (FI_RGBA_BLUE * 8)) & 0xff;
+	} else if (c != 0) {
+		bits[FI_RGBA_RED] = (c >> (FI_RGBA_RED * 8)) & 0xff;
+		bits[FI_RGBA_GREEN] = (c >> (FI_RGBA_GREEN * 8)) & 0xff;
+		bits[FI_RGBA_BLUE] = (c >> (FI_RGBA_BLUE * 8)) & 0xff;
+	}
 }
 
-void tglScreenPutChar(char c, int x, int y, unsigned int fc, unsigned int bc) {
-	UG_PutChar(c, x, y, fc, bc);
+void tglScreenPutChar(char c, uint16_t x, uint16_t y, uint32_t fc, uint32_t bc, bool transparency) {
+	UG_PutChar(c, x, y, fc, bc, transparency);
 }
 
-void tglScreenPutString(int x, int y, char *text, unsigned int fc, unsigned int bc) {
-	UG_PutString(x, y, text, fc, bc);
+void tglScreenPutString(uint16_t x, uint16_t y, char *text, uint32_t fc, uint32_t bc, bool transparency) {
+	UG_PutString(x, y, text, fc, bc, transparency);
 }
 
-void tglScreenFill(unsigned int color) {
+void tglScreenFill(uint32_t color) {
 	UG_FillScreen(color);
 }
 void tglScreenSetFont(char *fontName) {

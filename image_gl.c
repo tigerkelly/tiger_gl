@@ -10,7 +10,7 @@
 #include "tiger_gl.h"
 #include "ugui.h"
 
-TGLBITMAP *tglImageCreate(int x, int y, int width, int height, int bpp) {
+TGLBITMAP *tglImageCreate(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t bpp) {
 
 	FIBITMAP *img = FreeImage_Allocate(width, height, bpp, FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK);
 	if (img == NULL) {
@@ -171,7 +171,7 @@ int tglImageDelete(TGLBITMAP *img) {
 	return 0;
 }
 
-int tglImageSaveRaw(unsigned char *bits, int width, int height, int bpp, char *fileName) {
+int tglImageSaveRaw(uint8_t *bits, uint16_t width, uint16_t height, uint16_t bpp, char *fileName) {
 
 	char *p = rindex(fileName, '.');
 
@@ -215,7 +215,7 @@ int tglImageSaveRaw(unsigned char *bits, int width, int height, int bpp, char *f
 	return 0;
 }
 
-TGLBITMAP *tglImageComposite(TGLBITMAP *img, unsigned int fc) {
+TGLBITMAP *tglImageComposite(TGLBITMAP *img, uint32_t fc) {
 	RGBQUAD rgb;
 	rgb.rgbRed = (fc >> (FI_RGBA_RED * 8)) & 0xff;
 	rgb.rgbGreen = (fc >> (FI_RGBA_GREEN * 8)) & 0xff;
@@ -227,7 +227,7 @@ TGLBITMAP *tglImageClone(TGLBITMAP *img) {
 	return (TGLBITMAP *)FreeImage_Clone((FIBITMAP *)img);
 }
 
-BYTE *tglImageGetScanLine(TGLBITMAP *img, int row) {
+BYTE *tglImageGetScanLine(TGLBITMAP *img, uint16_t row) {
 	if (img == NULL)
 		return NULL;
 
@@ -320,7 +320,7 @@ unsigned tglImageGetSize(TGLBITMAP *img) {
 	return FreeImage_GetDIBSize((FIBITMAP *)img);
 }
 
-TGLBITMAP *tglImageRescale(TGLBITMAP *img, int width, int height, TglFilter filter) {
+TGLBITMAP *tglImageRescale(TGLBITMAP *img, uint16_t width, uint16_t height, TglFilter filter) {
 	if (img == NULL)
 		return NULL;
 

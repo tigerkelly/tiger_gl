@@ -45,7 +45,7 @@ UG_GUI _gui;
 
 int _stopUpdateThread = 0;
 
-int tglInit(char *device, int width, int height) {
+int tglInit(char *device, uint16_t width, uint16_t height) {
 	UG_Init(&_gui, tglScreenPutPixel, width, height);
 
 	// llInit(2);
@@ -252,7 +252,7 @@ void tglFbUpdate() {
 	}
 }
 
-void tglFbUpdateArea(unsigned char *buf, int bx, int by, int bw, int bh) {
+void tglFbUpdateArea(uint8_t *buf, uint16_t bx, uint16_t by, uint16_t bw, uint16_t bh) {
 
 	if (bw == 0 && bh == 0)
 		return;
@@ -270,7 +270,7 @@ void tglFbUpdateArea(unsigned char *buf, int bx, int by, int bw, int bh) {
 	}
 }
 
-void tglFbSaveArea(int bx, int by, int bw, int bh) {
+void tglFbSaveArea(uint16_t bx, uint16_t by, uint16_t bw, uint16_t bh) {
 
 	int Bpp = (_vinfo.bits_per_pixel / 8);	// Bytes per pixel
 	int length = bw * Bpp;					// number of bytes to copy
@@ -283,14 +283,14 @@ void tglFbSaveArea(int bx, int by, int bw, int bh) {
 	_savedArea.width = bw;
 	_savedArea.height = bh;
 
-	_savedArea.area = (unsigned char *)calloc(1, (length * bh));
+	_savedArea.area = (uint8_t *)calloc(1, (length * bh));
 
 	int row = 0;
 	for (int y = by; y < (by + bh); y++) {
 		int loc1 = (bx * Bpp) + (y * _finfo.line_length);
 
-		unsigned char *p = (_tglInfo->fbp + loc1);
-		unsigned char *b = (_savedArea.area + row);
+		uint8_t *p = (_tglInfo->fbp + loc1);
+		uint8_t *b = (_savedArea.area + row);
 
 		memcpy(b, p, length);
 
@@ -310,8 +310,8 @@ void tglFbRestoreArea() {
 	for (int y = _savedArea.y; y < (_savedArea.y + _savedArea.height); y++) {
 		int loc1 = (_savedArea.x * Bpp) + (y * _finfo.line_length);
 
-		unsigned char *p = (_tglInfo->fbp + loc1);
-		unsigned char *b = (_savedArea.area + row);
+		uint8_t *p = (_tglInfo->fbp + loc1);
+		uint8_t *b = (_savedArea.area + row);
 
 		memcpy(p, b, length);
 
