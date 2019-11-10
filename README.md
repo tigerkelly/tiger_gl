@@ -181,4 +181,4 @@ Just type **make** in each repository to compile libraies and programs.
 
 I have only tested this on a Raspberry Pi using the NOOBS default OS.
 
-I am using a RPI 3B+ to run the **tiger_gl** programs and a RPI Zero W for the **vid** program but you should be able to use any RPI board.  The only issue with the different boars is memory and network speed.
+I am using a RPI 3B+ to run the **tiger_gl** programs and a RPI Zero W for the **vid** program but you should be able to use any RPI board.  The only issue with the different boards is memory and network speed.
