@@ -33,10 +33,11 @@ The **tiger_gl** library uses two screen buffers. The first screen area is what 
 The library is divdied up into groups:
 
 	- General screen functions. (screen_gl.c)
+	- Image functions, FrameImage. (image_gl.c)
 	- Primartive drawing functions. (draw_gl.c)
 	- Main library functions. (tiger_gl.c)
 	- Touch screen functions. (touch_gl.c)
-	- Widget fucntions. (widget_gl.c)
+	- Widget functions. (widget_gl.c)
 	- Ugui functions. (ugui.c) I am using the primative drawing and font functions of ugui.
 
 #### Tiger_gl API
@@ -174,6 +175,10 @@ You will also need to install the **[utils](https://github.com/tigerkelly/utils)
 
 A test program has been written **[tiger_gl-test](https://github.com/tigerkelly/tiger_gl-test)**
 
-Once installed you should be able to type **make** to build the library.
+Place the above repositories in the same directory.
+
+Just type **make** in each repository to compile libraies and programs.
 
 I have only tested this on a Raspberry Pi using the NOOBS default OS.
+
+I am using a RPI 3B+ to run the **tiger_gl** programs and a RPI Zero W for the **vid** program but you should be able to use any RPI board.  The only issue with the different boars is memory and network speed.

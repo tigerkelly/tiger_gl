@@ -184,12 +184,6 @@ void tglDrawVideoImage(TglWidget *tw, TGLBITMAP *img) {
 	unsigned char *p = FreeImage_GetBits((FIBITMAP *)img);
 	int bpp = tglImageGetLine(img) / tglImageGetWidth(img);
 
-	// printf("Bpp %d\n", bpp);
-	// printf("bytespp: %d, %d / %d\n", bytespp,  tglScreenGetLine(), screenWidth);
-	// printf("Size: %d\n", FreeImage_GetDIBSize(_ts->screen));
-
-	// printf("xs %d, ys %d, width %d, height %d\n", xs, ys, width, height);
-
 	for (int y = tw->y; y < (tw->y + tw->height); y++) {
 		BYTE *bits = tglScreenGetScanLine(y);
 		if (tw->x > 0)
