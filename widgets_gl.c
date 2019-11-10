@@ -14,6 +14,7 @@
 #include <stdarg.h>
 #include <FreeImage.h>
 
+#include "strutils.h"
 #include "tiger_gl.h"
 #include "ugui.h"
 
@@ -30,6 +31,7 @@ void _paintCheckbox(TglWidget *tw, bool flag);
 void _paintRadio(TglWidget *tw, bool flag);
 //void _paintTextbox(TglWidget *tw, bool flag);
 void _paintProgressBar(TglWidget *tw, bool flag);
+void _paintSpinner(TglWidget *tw, bool flag);
 
 int tglIsInside(TglWidget *tw, uint16_t x, uint16_t y) {
 
@@ -93,6 +95,24 @@ void tglWidgetEvent(uint16_t x, uint16_t y, uint16_t p, uint16_t t) {
 					}
 				} else if ((t & TOUCH_STOP) == TOUCH_STOP) {
 					_paintButton(tws, false);
+					if (tws->touchAction == TOUCH_UP) {
+						flag = 1;
+					}
+				}
+			}
+
+			if (tws->widgetType == WIDGET_SPINNER) {
+				if ((t & TOUCH_START) == TOUCH_START) {
+					if (tws->spNum < (tws->spCnt - 1))
+						tws->spNum++;
+					else
+						tws->spNum = 0;
+					_paintSpinner(tws, true);
+					if (tws->touchAction == TOUCH_DOWN) {
+						flag = 1;
+					}
+				} else if ((t & TOUCH_STOP) == TOUCH_STOP) {
+					_paintSpinner(tws, false);
 					if (tws->touchAction == TOUCH_UP) {
 						flag = 1;
 					}
@@ -200,6 +220,9 @@ void tglWidgetDelete(TglWidget *tw) {
 
 	if (tw->iconName != NULL)
 		free(tw->iconName);
+	
+	if (tw->spList != NULL)
+		free(tw->spList);
 
 	if (tw->icon != NULL)
 		FreeImage_Unload((FIBITMAP *)tw->icon);
@@ -759,6 +782,122 @@ TglWidget *tglWidgetProgressBar(uint16_t x, uint16_t y, uint16_t width, uint16_t
     tw->width = width;
     tw->height = height;
     tw->paintWidget = _paintProgressBar;
+
+    return tw;
+}
+
+int toSpinnerArray(TglWidget *tw, char *str) {
+	int longest = 0;
+
+	tw->spCnt = countArgs(str);
+
+	char *args[tw->spCnt + 1];
+
+	char *s = strdup(str);		// parse modifies string.
+
+	int r = parse(s, ",", args, tw->spCnt + 1);
+
+	if (r <= 0) {
+		printf("parse returned error %d\n", r);
+		free(s);
+		return 0;
+	}
+	
+	for (int i = 0; i < r; i++) {
+		int x = strlen(args[i]);
+		if (x > longest)
+			longest = x;
+	}
+
+	tw->spLen = longest + 1;
+
+	tw->spList = (char *)calloc(tw->spCnt, tw->spLen);
+	char *p = tw->spList;
+
+	for (int i = 0; i < r; i++) {
+		strcpy(p, args[i]);
+		p += tw->spLen;
+	}
+
+	free(s);
+
+	return r;
+}
+
+void tglWidgetSetSpinnerNum(TglWidget *tw, uint16_t num) {
+
+	if (num < 0 || num >= tw->spCnt)
+		tw->spNum = 0;
+	else
+		tw->spNum = num;
+
+	_addAreaW(tw);
+}
+
+void tglWidgetSetSpinnerList(TglWidget *tw, char *spList) {
+
+	if (spList != NULL) {
+		if (tw->spList != NULL)
+			free(tw->spList);
+
+		toSpinnerArray(tw, spList);
+		if (tw->spNum >= tw->spCnt)
+			tw->spNum = 0;
+	}
+
+	_addAreaW(tw);
+}
+
+void _paintSpinner(TglWidget *tw, bool flag) {
+
+	tglSetAutoUpdate(TGL_NO_AUTOUPDATE);
+
+	tglDrawFillRect(tw->x, tw->y, tw->width, tw->height, TGL_COLOR_WHITE);
+	tglDrawRect(tw->x+4, tw->y+4, tw->width-10, tw->height-10, tw->fgColor);
+	tglDrawFillRect(tw->x+5, tw->y+5, tw->width-12, tw->height-12, TGL_COLOR_LIGHTERGRAY);
+
+	if (tw->spList != NULL) {
+		if (tw->textFont == NULL)
+			tw->textFont = UG_GetFont("FONT_6x10");
+
+		UG_SetFont(tw->textFont);
+
+		UG_FONT *gf = tw->textFont;
+
+		int xp = tw->x + 12;
+		int yp = ((tw->height - gf->char_height) / 2) + tw->y;
+
+		tglDrawPutString(xp, yp, (char *)(tw->spList + (tw->spLen * tw->spNum)), tw->fgColor, 0, true);
+	}
+
+	tglSetAutoUpdate(TGL_AUTOUPDATE);
+
+	_addAreaW(tw);
+}
+
+// spList is a comma seperated list of strings, ie: "kelly,was here,and,gone." 4 parts
+TglWidget *tglWidgetSpinner(uint16_t x, uint16_t y, uint16_t width, uint16_t height, char *spList) {
+	 TglWidget *tw = NULL;
+
+    tw = (TglWidget *)calloc(1, sizeof(TglWidget));
+    if (tw == NULL)
+        return NULL;
+
+    tw->widgetType = WIDGET_SPINNER;
+    tw->widgetId = _widgetId++;
+	tw->txtColor = TGL_COLOR_BLACK;
+	tw->pbNum = 0;
+	tw->pbMax = 100;
+	if (spList != NULL) {
+		toSpinnerArray(tw, spList);
+	}
+	tw->fgColor = TGL_COLOR_BLACK;
+	tw->bgColor = TGL_COLOR_WHITE;
+    tw->x = x;
+    tw->y = y;
+    tw->width = width;
+    tw->height = height;
+    tw->paintWidget = _paintSpinner;
 
     return tw;
 }

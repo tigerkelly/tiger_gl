@@ -63,7 +63,8 @@ typedef enum {
 	WIDGET_LISTBOX,
 	WIDGET_IMAGE,
 	WIDGET_LABEL,
-	WIDGET_PROGRESSBAR
+	WIDGET_PROGRESSBAR,
+	WIDGET_SPINNER
 } WidgetType;
 
 typedef enum {
@@ -85,6 +86,10 @@ typedef struct _tglWidget_ {
 	uint16_t y;
 	uint16_t width;
 	uint16_t height;
+	char *spList;
+	uint16_t spCnt;
+	uint16_t spLen;
+	uint16_t spNum;
 	TouchAction touchAction;
 	char *data;
 	char *text;
@@ -361,6 +366,9 @@ TglWidget *tglWidgetCheckbox(char *text, uint16_t x, uint16_t y, uint16_t width,
 // TglWidget *tglWidgetTextbox(char *text, uint16_t x, uint16_t y, uint16_t width, uint16_t height);
 TglWidget *tglWidgetRadio(char *text, uint16_t x, uint16_t y, uint16_t width, uint16_t height);
 TglWidget *tglWidgetProgressBar(uint16_t x, uint16_t y, uint16_t width, uint16_t height, bool pbText, uint32_t c);
+TglWidget *tglWidgetSpinner(uint16_t x, uint16_t y, uint16_t width, uint16_t height, char *spList);
+void tglWidgetSetSpinnerNum(TglWidget *tw, uint16_t num);
+void tglWidgetSetSpinnerList(TglWidget *tw, char *spList);
 void tglWidgetSetProgressBarColor(TglWidget *tw, uint32_t c);
 void tglWidgetSetProgressBarNum(TglWidget *tw, uint16_t num);
 void tglWidgetSetButtonText(TglWidget *tw, char *text);
