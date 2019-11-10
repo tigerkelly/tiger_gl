@@ -72,6 +72,14 @@ typedef enum {
 	TOUCH_DOWN = 2
 } TouchAction;
 
+typedef struct _clipregion_ {
+	bool isActive;
+	uint16_t x;
+	uint16_t y;
+	uint16_t width;
+	uint16_t height;
+} ClipRegion;
+
 typedef struct _tglWidget_ {
 	WidgetType widgetType;
 	bool inUse;
@@ -271,6 +279,8 @@ char *cqGetName(int queNum);
 int cqGetNum(char *cqName);
 
 void _addArea(WidgetType type, uint16_t x, uint16_t y, uint16_t width, uint16_t height);
+void tglDrawSetClipRegion(uint16_t x, uint16_t y, uint16_t width, uint16_t height);
+void tglDrawUnsetClipRegion();
 void tglDrawVideoImage(TglWidget *tw, TGLBITMAP *img);
 void tglDrawImage(uint16_t x, uint16_t y, TGLBITMAP *img, bool transparency);
 void tglDrawTransparentImage(uint16_t x, uint16_t y, TGLBITMAP *img);

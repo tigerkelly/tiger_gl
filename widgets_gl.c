@@ -318,10 +318,12 @@ void _paintButton(TglWidget *tw, bool flag) {
 			yp = ((tw->height - gf->char_height) / 2) + tw->y;
 		}
 
+		tglDrawSetClipRegion(tw->x+8, tw->y+8, tw->width-16, tw->height-16);
 		if(flag)
 			tglDrawPutString(xp, yp, tw->text, tw->fgColor, 0, true);
 		else
 			tglDrawPutString(xp, yp, tw->text, tw->fgColor, 0, true);
+		tglDrawUnsetClipRegion();
 
 	}
 
@@ -408,10 +410,12 @@ void _paintTextbox(TglWidget *tw, bool flag) {
 		int xp = tw->x + 6;
 		int yp = ((tw->height - gf->char_height) / 2) + (tw->y + (gf->char_height / 2));
 		
+		tglDrawSetClipRegion(tw->x+4, tw->y+4, tw->width-9, tw->height-9);
 		if (tw->hasFocus == true)
 			tglDrawPutString(xp, yp, tw->text, tw->fgColor, TGL_COLOR_LIGHTGREEN, true);
 		else
 			tglDrawPutString(xp, yp, tw->text, tw->fgColor, tw->bgColor, true);
+		tglDrawUnsetClipRegion();
 	}
 
 	tglSetAutoUpdate(TGL_AUTOUPDATE);
@@ -482,7 +486,9 @@ void _paintLabel(TglWidget *tw, bool flag) {
 		int xp = tw->x + 4;
 		int yp = ((tw->height - gf->char_height) / 2) + tw->y;
 		
+		tglDrawSetClipRegion(tw->x, tw->y, tw->width, tw->height);
 		tglDrawPutString(xp, yp, tw->text, tw->fgColor, tw->bgColor, true);
+		tglDrawUnsetClipRegion();
 	}
 
 	tglSetAutoUpdate(TGL_AUTOUPDATE);
@@ -565,13 +571,11 @@ void _paintCheckbox(TglWidget *tw, bool flag) {
 		tglDrawLine(tw->x+14, (tw->y + tw->height) - 18, tw->x+24, tw->y+10, tw->fgColor);
 		tglDrawLine(tw->x+11, tw->y+17, tw->x+15, (tw->y + tw->height) - 19, tw->fgColor);
 		tglDrawLine(tw->x+15, (tw->y + tw->height) - 17, tw->x+25, tw->y+10, tw->fgColor);
-		// tglDrawFillRect(tw->x+8, tw->y+8, tw->height-16, tw->height-16, tw->fgColor);
 	} else {
 		tglDrawLine(tw->x+10, tw->y+18, tw->x+14, (tw->y + tw->height) - 18, tw->bgColor);
 		tglDrawLine(tw->x+14, (tw->y + tw->height) - 18, tw->x+24, tw->y+10, tw->bgColor);
 		tglDrawLine(tw->x+11, tw->y+17, tw->x+15, (tw->y + tw->height) - 19, tw->bgColor);
 		tglDrawLine(tw->x+15, (tw->y + tw->height) - 17, tw->x+25, tw->y+10, tw->bgColor);
-		// tglDrawFillRect(tw->x+8, tw->y+8, tw->height-16, tw->height-16, tw->bgColor);
 	}
 
 	if (tw->text != NULL) {
@@ -585,7 +589,9 @@ void _paintCheckbox(TglWidget *tw, bool flag) {
 		int xp = tw->x + tw->height + 4;
 		int yp = ((tw->height - gf->char_height) / 2) + tw->y;
 		
+		tglDrawSetClipRegion(xp, yp, tw->width, tw->height);
 		tglDrawPutString(xp, yp, tw->text, tw->fgColor, tw->bgColor, true);
+		tglDrawUnsetClipRegion();
 	}
 
 	tglSetAutoUpdate(TGL_AUTOUPDATE);
@@ -658,7 +664,9 @@ void _paintRadio(TglWidget *tw, bool flag) {
 		int xp = tw->x + (tw->height - 20) + 4;
 		int yp = ((tw->height - gf->char_height) / 2) + tw->y;
 		
+		tglDrawSetClipRegion(xp, yp, tw->width-24, tw->height);
 		tglDrawPutString(xp, yp, tw->text, tw->fgColor, tw->bgColor, true);
+		tglDrawUnsetClipRegion();
 	}
 
 	tglSetAutoUpdate(TGL_AUTOUPDATE);
@@ -867,7 +875,9 @@ void _paintSpinner(TglWidget *tw, bool flag) {
 		int xp = tw->x + 12;
 		int yp = ((tw->height - gf->char_height) / 2) + tw->y;
 
+		tglDrawSetClipRegion(tw->x+5, tw->y+5, tw->width-12, tw->height-12);		
 		tglDrawPutString(xp, yp, (char *)(tw->spList + (tw->spLen * tw->spNum)), tw->fgColor, 0, true);
+		tglDrawUnsetClipRegion();
 	}
 
 	tglSetAutoUpdate(TGL_AUTOUPDATE);

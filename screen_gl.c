@@ -11,6 +11,8 @@
 
 TglScreen *_ts = NULL;
 
+ClipRegion _clip;
+
 extern TglInfo *_tglInfo;
 extern DirtyArea *dirtyArea;
 extern int dirtyAreaQue;
@@ -18,6 +20,14 @@ extern int dirtyAreaPoolQue;
 
 extern void _addArea(WidgetType type, uint16_t x, uint16_t y, uint16_t width, uint16_t height);
 extern void _addAreaW(TglWidget *tw);
+
+int _isInsideClip(uint16_t x, uint16_t y) {
+
+	if (x >= _clip.x && x < (_clip.x + _clip.width) && y >= _clip.y && y < (_clip.y + _clip.height))
+		return 1;
+
+    return 0;
+}
 
 int tglScreenCreate(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t bpp) {
 
@@ -368,19 +378,33 @@ void tglScreenPutPixel(short x, short y, uint32_t c, bool transparency) {
 	if (y > screenHeight)
 		return;
 
-	// printf("x %d, y %d c 0x%x\n", x, y, c);
-
 	int bytespp = tglScreenGetLine() / screenWidth;
-	BYTE *bits = tglScreenGetScanLine(y);
-	bits += (bytespp * x);
-	if (transparency == false) {
-		bits[FI_RGBA_RED] = (c >> (FI_RGBA_RED * 8)) & 0xff;
-		bits[FI_RGBA_GREEN] = (c >> (FI_RGBA_GREEN * 8)) & 0xff;
-		bits[FI_RGBA_BLUE] = (c >> (FI_RGBA_BLUE * 8)) & 0xff;
-	} else if (c != 0) {
-		bits[FI_RGBA_RED] = (c >> (FI_RGBA_RED * 8)) & 0xff;
-		bits[FI_RGBA_GREEN] = (c >> (FI_RGBA_GREEN * 8)) & 0xff;
-		bits[FI_RGBA_BLUE] = (c >> (FI_RGBA_BLUE * 8)) & 0xff;
+	if (_clip.isActive) {
+		if (_isInsideClip(x, y)) {
+			BYTE *bits = tglScreenGetScanLine(y);
+			bits += (bytespp * x);
+			if (transparency == false) {
+				bits[FI_RGBA_RED] = (c >> (FI_RGBA_RED * 8)) & 0xff;
+				bits[FI_RGBA_GREEN] = (c >> (FI_RGBA_GREEN * 8)) & 0xff;
+				bits[FI_RGBA_BLUE] = (c >> (FI_RGBA_BLUE * 8)) & 0xff;
+			} else if (c != 0) {
+				bits[FI_RGBA_RED] = (c >> (FI_RGBA_RED * 8)) & 0xff;
+				bits[FI_RGBA_GREEN] = (c >> (FI_RGBA_GREEN * 8)) & 0xff;
+				bits[FI_RGBA_BLUE] = (c >> (FI_RGBA_BLUE * 8)) & 0xff;
+			}
+		}
+	} else {
+		BYTE *bits = tglScreenGetScanLine(y);
+		bits += (bytespp * x);
+		if (transparency == false) {
+			bits[FI_RGBA_RED] = (c >> (FI_RGBA_RED * 8)) & 0xff;
+			bits[FI_RGBA_GREEN] = (c >> (FI_RGBA_GREEN * 8)) & 0xff;
+			bits[FI_RGBA_BLUE] = (c >> (FI_RGBA_BLUE * 8)) & 0xff;
+		} else if (c != 0) {
+			bits[FI_RGBA_RED] = (c >> (FI_RGBA_RED * 8)) & 0xff;
+			bits[FI_RGBA_GREEN] = (c >> (FI_RGBA_GREEN * 8)) & 0xff;
+			bits[FI_RGBA_BLUE] = (c >> (FI_RGBA_BLUE * 8)) & 0xff;
+		}
 	}
 }
 

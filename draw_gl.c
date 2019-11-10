@@ -3,6 +3,7 @@
 #include "tiger_gl.h"
 
 extern TglScreen *_ts;
+extern ClipRegion _clip;
 extern TglInfo *_tglInfo;
 extern DirtyArea *dirtyArea;
 extern int dirtyAreaQue;
@@ -34,6 +35,18 @@ void _addArea(WidgetType type, uint16_t x, uint16_t y, uint16_t width, uint16_t 
 
 void _addAreaW(TglWidget *tw) {
 	_addArea(tw->widgetType, tw->x, tw->y, tw->width, tw->height);
+}
+
+void tglDrawSetClipRegion(uint16_t x, uint16_t y, uint16_t width, uint16_t height) {
+	_clip.isActive = true;
+	_clip.x = x;
+	_clip.y = y;
+	_clip.width = width;
+	_clip.height = height;
+}
+
+void tglDrawUnsetClipRegion() {
+	_clip.isActive = false;
 }
 
 void tglDrawLine(uint16_t xs, uint16_t ys, uint16_t xe, uint16_t ye, uint32_t c) {
