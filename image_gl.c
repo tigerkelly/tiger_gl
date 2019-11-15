@@ -10,7 +10,9 @@
 #include "tiger_gl.h"
 #include "ugui.h"
 
-TGLBITMAP *tglImageCreate(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t bpp) {
+extern UG_GUI _gui;
+
+TGLBITMAP *tglImageCreate(uint16_t width, uint16_t height, uint16_t bpp) {
 
 	FIBITMAP *img = FreeImage_Allocate(width, height, bpp, FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK);
 	if (img == NULL) {
@@ -33,6 +35,8 @@ TGLBITMAP *tglImageLoad(char *fileName) {
 		type = FIF_PNG;
 	else if (strcasecmp(p, ".bmp") == 0)
 		type = FIF_BMP;
+	else if (strcasecmp(p, ".xbm") == 0)
+		type = FIF_XBM;
 	else if (strcasecmp(p, ".jpeg") == 0 ||
 			strcasecmp(p, ".jpg") == 0 ||
 			strcasecmp(p, ".jif") == 0 ||
@@ -97,18 +101,50 @@ long myTellProc(fi_handle handle) {
 	return ftell((FILE *)handle);
 }
 
-TGLBITMAP *tglImageLoadMem(unsigned char *mem, int memLength) {
+TGLBITMAP *tglImageLoadMem(unsigned char *mem, int memLength, char *type) {
 
 	FIMEMORY *hmem = FreeImage_OpenMemory(mem, memLength);
 
-	FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory(hmem, 0);
+	FREE_IMAGE_FORMAT fif = FIF_PNG;
+	if (type == NULL)
+		fif = FreeImage_GetFileTypeFromMemory(hmem, 0);
+	else {
+		if (strcasecmp(type, "png") == 0)
+			fif = FIF_PNG;
+		else if (strcasecmp(type, "bmp") == 0)
+			fif = FIF_BMP;
+		else if (strcasecmp(type, "xbm") == 0)
+			fif = FIF_XBM;
+		else if (strcasecmp(type, "jpeg") == 0 ||
+				strcasecmp(type, "jpg") == 0 ||
+				strcasecmp(type, "jif") == 0 ||
+				strcasecmp(type, "jpe") == 0)
+			fif = FIF_JPEG;
+		else if (strcasecmp(type, "gif") == 0)
+			fif = FIF_GIF;
+		else if (strcasecmp(type, "j2k") == 0 ||
+				strcasecmp(type, "j2c") == 0)
+			fif = FIF_J2K;
+		else if (strcasecmp(type, "jng") == 0)
+			fif = FIF_JNG;
+		else if (strcasecmp(type, "ico") == 0)
+			fif = FIF_ICO;
+		else if (strcasecmp(type, "ico") == 0)
+			fif = FIF_ICO;
+		else {
+			printf("Error: Unknown image type.\n");
+			return NULL;
+		}
+	}
+
+	// printf("FIF + %d\n", fif);
 
 	FIBITMAP *img = FreeImage_LoadFromMemory(fif, hmem, 0);
 
-	// printf("width %d height %d Bpp %d\n", 
-	// 		FreeImage_GetWidth(img),
-	// 		FreeImage_GetHeight(img),
-	// 		FreeImage_GetBPP(img));
+	printf("width %d height %d Bpp %d\n", 
+			FreeImage_GetWidth(img),
+			FreeImage_GetHeight(img),
+			FreeImage_GetBPP(img));
 
 	FreeImage_CloseMemory(hmem);
 
@@ -330,6 +366,149 @@ TGLBITMAP *tglImageRescale(TGLBITMAP *img, uint16_t width, uint16_t height, TglF
 	}
 
 	return (TGLBITMAP *)t;
+}
+
+void tglImagePutPixel(TGLBITMAP *img, short x, short y, uint32_t c) {
+	BYTE *row = tglImageGetScanLine(img, y);
+	row += x;
+
+	row[FI_RGBA_RED] = (c >> (FI_RGBA_RED * 8)) & 0xff;
+	row[FI_RGBA_GREEN] = (c >> (FI_RGBA_GREEN * 8)) & 0xff;
+	row[FI_RGBA_BLUE] = (c >> (FI_RGBA_BLUE * 8)) & 0xff;
+}
+
+void tglImageFill(TGLBITMAP *img, uint32_t c) {
+
+	int width = tglImageGetWidth(img);
+	int height = tglImageGetHeight(img);
+	for (int y = 0; y < height; y++) {
+		BYTE *row = tglImageGetScanLine(img, y);
+
+		for (int x = 0; x < width; x++) {
+			row[FI_RGBA_RED] = (c >> (FI_RGBA_RED * 8)) & 0xff;
+			row[FI_RGBA_GREEN] = (c >> (FI_RGBA_GREEN * 8)) & 0xff;
+			row[FI_RGBA_BLUE] = (c >> (FI_RGBA_BLUE * 8)) & 0xff;
+
+			row += 4;
+		}
+	}
+}
+
+void tglImageDrawLine(TGLBITMAP *img, uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, uint32_t c) {
+	short n, dx, dy, sgndx, sgndy, dxabs, dyabs, x, y, drawx, drawy;
+
+	dx = x2 - x1;
+    dy = y2 - y1;
+    dxabs = (dx>0)?dx:-dx;
+    dyabs = (dy>0)?dy:-dy;
+    sgndx = (dx>0)?1:-1;
+    sgndy = (dy>0)?1:-1;
+    x = dyabs >> 1;
+    y = dxabs >> 1;
+    drawx = x1;
+    drawy = y1;
+
+    tglImagePutPixel(img, drawx, drawy, c);
+
+    if( dxabs >= dyabs ) {
+        for( n=0; n<dxabs; n++ ) {
+            y += dyabs;
+            if( y >= dxabs ) {
+                y -= dxabs;
+                drawy += sgndy;
+            }
+            drawx += sgndx;
+            tglImagePutPixel(img, drawx, drawy, c);
+        }
+    } else {
+        for( n=0; n<dyabs; n++ ) {
+            x += dxabs;
+            if( x >= dyabs ) {
+                x -= dyabs;
+                drawx += sgndx;
+            }
+            drawy += sgndy;
+            tglImagePutPixel(img, drawx, drawy, c);
+        }
+    }
+}
+
+void tglImagePutChar(TGLBITMAP *img, uint16_t x, uint16_t y, char chr, uint32_t fc, uint32_t bc, TGL_FONT *font, bool transparency) {
+
+	short i,j,xo,yo,bn,actual_char_width;
+    char b,bt;
+    uint32_t index;
+    uint32_t color;
+
+    bt = (uint8_t)chr;
+
+    switch ( bt ) {
+        case 0xF6: bt = 0x94; break; // ö
+        case 0xD6: bt = 0x99; break; // Ö
+        case 0xFC: bt = 0x81; break; // ü
+        case 0xDC: bt = 0x9A; break; // Ü
+        case 0xE4: bt = 0x84; break; // ä
+        case 0xC4: bt = 0x8E; break; // Ä
+        case 0xB5: bt = 0xE6; break; // µ
+        case 0xB0: bt = 0xF8; break; // °
+    }
+
+    if (bt < font->start_char || bt > font->end_char)
+        return;
+
+    yo = y;
+    bn = font->char_width;
+    if ( !bn )
+        return;
+    bn >>= 3;
+    if ( font->char_width % 8 )
+        bn++;
+    actual_char_width = (font->widths ? font->widths[bt - font->start_char] : font->char_width);
+
+	index = (bt - font->start_char)* font->char_height * font->char_width;
+	for( j = 0; j < font->char_height; j++ ) {
+		xo = x;
+		for( i = 0; i < actual_char_width; i++ ) {
+			b = font->p[index++];
+			color = ((((fc & 0xFF) * b + (bc & 0xFF) * (256 - b)) >> 8) & 0xFF) |//Blue component
+				((((fc & 0xFF00) * b + (bc & 0xFF00) * (256 - b)) >> 8)  & 0xFF00)|//Green component
+				((((fc & 0xFF0000) * b + (bc & 0xFF0000) * (256 - b)) >> 8) & 0xFF0000); //Red component
+			tglImagePutPixel(img, xo, yo, color);
+			xo++;
+		}
+		index += font->char_width - actual_char_width;
+		yo++;
+	}
+}
+
+void tglImagePutString(TGLBITMAP *img, uint16_t x, uint16_t y, char* str, uint32_t fc, uint32_t bc, TGL_FONT *font, bool transparency) {
+
+	short xp,yp;
+    uint8_t cw;
+    char chr;
+
+    xp=x;
+    yp=y;
+
+    while ( *str != 0 ) {
+        chr = *str++;
+        if (chr < font->start_char || chr > font->end_char)
+            continue;
+        if ( chr == '\n' ) {
+            xp = _gui.x_dim;
+            continue;
+        }
+        cw = font->widths ? font->widths[chr - font->start_char] : font->char_width;
+
+        if ( xp + cw > _gui.x_dim - 1 ) {
+            xp = x;
+            yp += font->char_height+_gui.char_v_space;
+        }
+
+        tglImagePutChar(img, xp, yp, chr, fc, bc, font, transparency);
+
+        xp += cw + _gui.char_h_space;
+    }
 }
 
 TGLBITMAP *tglImageConvertTo32(TGLBITMAP *img) {

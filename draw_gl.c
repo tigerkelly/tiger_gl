@@ -49,6 +49,11 @@ void tglDrawUnsetClipRegion() {
 	_clip.isActive = false;
 }
 
+void tglDrawFillScreen(uint32_t c) {
+	UG_FillScreen(c);
+	_addArea(WIDGET_MAIN_SCREEN, _ts->x, _ts->y, _ts->width, _ts->height);
+}
+
 void tglDrawLine(uint16_t xs, uint16_t ys, uint16_t xe, uint16_t ye, uint32_t c) {
 	UG_DrawLine(xs, ys, xe, ye, c);
 	if(_tglInfo->autoUpdate)

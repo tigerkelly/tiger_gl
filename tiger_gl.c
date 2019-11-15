@@ -18,8 +18,12 @@
 #include "ini.h"
 
 #define DIRTY_AREA_QUEUE_SIZE	256
+#define TW_QUEUE_SIZE			64
 
 extern TglScreen *_ts;		// initalized by tglScreenCreate()
+extern void _paintButton(TglWidget *tw, bool flag);
+extern void _paintSpinner(TglWidget *tw, bool flag);
+extern void _addAreaW(TglWidget *tw);
 
 struct fb_var_screeninfo _vinfo;
 struct fb_var_screeninfo _orig;
@@ -36,8 +40,13 @@ DirtyArea *dirtyArea = NULL;
 int dirtyAreaQue = 0;
 int dirtyAreaPoolQue = 0;
 
+int twQue = 0;
+
 void *_updateThread(void *param);
 pthread_t _updThread;
+
+void *_updateButton(void *param);
+pthread_t _updButton;
 
 IniFile *ini = NULL;
 
@@ -133,10 +142,17 @@ int tglFbOpen(char *device) {
 
 	if (_tglInfo->autoUpdate) {
 		int r = 0;
-		if ((r = cqInit(2))) {
+		if ((r = cqInit(3))) {
 			printf("Cqueue init failed. %d\n", r);
 			return -10;
 		}
+
+		twQue = cqCreate("twQue", TW_QUEUE_SIZE + 1);	// extra slot for head/tail
+		if (twQue == -1) {
+			printf("Cqueue create failed. %d\n", r);
+			return -12;
+		}
+		// ----------------------
 
 		dirtyArea = (DirtyArea *)calloc(DIRTY_AREA_QUEUE_SIZE, sizeof(DirtyArea));
 		if (dirtyArea == NULL) {
@@ -164,6 +180,11 @@ int tglFbOpen(char *device) {
 
 		if (pthread_create(&_updThread, NULL, _updateThread, NULL)) {
 			printf("Error: Can not create thread updateThread\n");
+			return -14;
+		}
+
+		if (pthread_create(&_updButton, NULL, _updateButton, NULL)) {
+			printf("Error: Can not create thread updateButton\n");
 			return -14;
 		}
 	}
@@ -339,6 +360,35 @@ void *_updateThread(void *param) {
 			tglFbUpdateArea(tglImageGetScanLine(_ts->screen, 0), da->x, da->y, da->width, da->height);
 
 		cqAdd(dirtyAreaPoolQue, &it);	// put it back onto free queue.
+	}
+
+	return NULL;
+}
+
+void *_updateButton(void *param) {
+
+	ItemType it;
+	while(_stopUpdateThread == 0) {
+		// Update button queue.
+		int r = cqRemove(twQue, &it, CQ_BLOCK);
+		if (r != 0) {
+			printf("Remove from twQue queue failed. %d\n", r);
+			// leave thread.
+			break;
+		}
+
+		struct timespec t = {0, 200000000L };
+
+		nanosleep(&t, NULL);
+
+		TglWidget *tw = (TglWidget *)it.p;
+
+		if (tw->widgetType == WIDGET_BUTTON)
+			_paintButton(tw, false);
+		else if (tw->widgetType == WIDGET_SPINNER)
+			_paintSpinner(tw, false);
+
+		_addAreaW(tw);
 	}
 
 	return NULL;

@@ -15,6 +15,8 @@
 #define TOUCH_X			0x04
 #define TOUCH_Y			0x08
 #define TOUCH_PRESSURE	0x10
+#define TOUCH_XMOVE		0x20
+#define TOUCH_YMOVE		0x40
 
 #define MAX_AREAS		64
 
@@ -49,6 +51,7 @@
 
 #define TGLBITMAP	FIBITMAP
 #define TGLRGB		RGBQUAD
+#define TGL_FONT	UG_FONT
 
 #define MAX_LLNAME      32
 #define MAX_LLISTS      16
@@ -64,7 +67,8 @@ typedef enum {
 	WIDGET_IMAGE,
 	WIDGET_LABEL,
 	WIDGET_PROGRESSBAR,
-	WIDGET_SPINNER
+	WIDGET_SPINNER,
+	WIDGET_MAIN_SCREEN
 } WidgetType;
 
 typedef enum {
@@ -82,10 +86,11 @@ typedef struct _clipregion_ {
 
 typedef struct _tglWidget_ {
 	WidgetType widgetType;
-	bool inUse;
 	bool checked;
 	bool hasFocus;
 	bool pbText;		// progress bar flag
+	bool isRegistered;
+	bool isPressed;
 	uint16_t groupId;
 	uint16_t widgetId;
 	uint16_t pbNum;		// progress bar number
@@ -94,14 +99,15 @@ typedef struct _tglWidget_ {
 	uint16_t y;
 	uint16_t width;
 	uint16_t height;
-	char *spList;
-	uint16_t spCnt;
-	uint16_t spLen;
-	uint16_t spNum;
+	char *strList;		// used for Spinner and Listbox
+	uint16_t cnt;		// used for Spinner and Listbox
+	uint16_t len;		// used for Spinner and Listbox
+	uint16_t selected;	// used for Spinner and Listbox
+	uint16_t position;
 	TouchAction touchAction;
 	char *data;
 	char *text;
-	UG_FONT *textFont;
+	TGL_FONT *textFont;
 	uint32_t fgColor;
 	uint32_t bgColor;
 	uint32_t pbColor;		// progressbar color
@@ -238,8 +244,8 @@ int tglTouchInit(char *device, uint16_t screenWidth, uint16_t screenHeight, uint
 #define MAX_CQNAME	32
 #define MAX_CQUEUES	16
 
-#define CQ_NONBLOCK	0
-#define CQ_BLOCK	1
+#define CQ_NONBLOCK		0
+#define CQ_BLOCK		1
 
 typedef union _items_ {
 	unsigned char c;
@@ -270,6 +276,7 @@ int cqGrow(int cqNum, int growth);
 int cqSetGrowth(int cqNum, int growth);
 int cqSetBuffer(int cqNum, void *buffer, int blkSize);
 int cqAdd(int cqNum, ItemType *value);
+int cqRemoveTimeout(int cqNum, ItemType *value, int block, int ms);
 int cqRemove(int cqNum, ItemType *value, int block);
 int cqRemoveTimed(int cqNum, ItemType *value, int timeout);
 int cqDestroy(int queNum);
@@ -281,6 +288,7 @@ int cqGetNum(char *cqName);
 void _addArea(WidgetType type, uint16_t x, uint16_t y, uint16_t width, uint16_t height);
 void tglDrawSetClipRegion(uint16_t x, uint16_t y, uint16_t width, uint16_t height);
 void tglDrawUnsetClipRegion();
+void tglDrawFillScreen(uint32_t c);
 void tglDrawVideoImage(TglWidget *tw, TGLBITMAP *img);
 void tglDrawImage(uint16_t x, uint16_t y, TGLBITMAP *img, bool transparency);
 void tglDrawTransparentImage(uint16_t x, uint16_t y, TGLBITMAP *img);
@@ -300,8 +308,8 @@ void tglDrawPutString(uint16_t x, uint16_t y, char *text, uint32_t fc, uint32_t 
 void tglSetFgColor(uint32_t fg);
 void tglSetBgColor(uint32_t bg);
 
-TGLBITMAP *tglImageLoadMem(unsigned char *mem, int memLength);
-TGLBITMAP *tglImageCreate(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t bpp);
+TGLBITMAP *tglImageLoadMem(unsigned char *mem, int memLength, char *type);
+TGLBITMAP *tglImageCreate(uint16_t width, uint16_t height, uint16_t bpp);
 TGLBITMAP *tglImageLoad(char *fileName);
 TGLBITMAP *tglImageComposite(TGLBITMAP *img, uint32_t fc);
 int tglImageSave(TGLBITMAP *img, char *fileName);
@@ -329,6 +337,10 @@ TGLBITMAP *tglImageConvertTo32(TGLBITMAP *img);
 void tglImageSetTransparent(TGLBITMAP *img, bool flag);
 void tglImageSetTransTable(TGLBITMAP *img, BYTE *table, int count);
 void tglImageGetBg(TGLBITMAP *img, TGLRGB *rgb);
+void tglImageFill(TGLBITMAP *img, uint32_t c);
+void tglImageDrawLine(TGLBITMAP *img, uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, uint32_t c);
+void tglImagePutChar(TGLBITMAP *img, uint16_t x, uint16_t y, char text, uint32_t fc, uint32_t bc, TGL_FONT *font, bool transparency);
+void tglImagePutString(TGLBITMAP *img, uint16_t x, uint16_t y, char *text, uint32_t fc, uint32_t bc, TGL_FONT *font, bool transparency);
 
 int tglScreenCreate(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t bpp);
 int tglScreenLoad(char *fileName);
@@ -373,11 +385,13 @@ TglWidget *tglWidgetImage(uint16_t xs, uint16_t ys, uint16_t width, uint16_t hei
 TglWidget *tglWidgetButton(char *text, uint16_t x, uint16_t y, uint16_t width, uint16_t height);
 TglWidget *tglWidgetLabel(char *text, uint16_t x, uint16_t y, uint16_t width, uint16_t height);
 TglWidget *tglWidgetCheckbox(char *text, uint16_t x, uint16_t y, uint16_t width, uint16_t height);
-// TglWidget *tglWidgetTextbox(char *text, uint16_t x, uint16_t y, uint16_t width, uint16_t height);
+TglWidget *tglWidgetTextbox(char *text, uint16_t x, uint16_t y, uint16_t width, uint16_t height);
 TglWidget *tglWidgetRadio(char *text, uint16_t x, uint16_t y, uint16_t width, uint16_t height);
 TglWidget *tglWidgetProgressBar(uint16_t x, uint16_t y, uint16_t width, uint16_t height, bool pbText, uint32_t c);
-TglWidget *tglWidgetSpinner(uint16_t x, uint16_t y, uint16_t width, uint16_t height, char *spList);
-void tglWidgetSetSpinnerNum(TglWidget *tw, uint16_t num);
+TglWidget *tglWidgetSpinner(uint16_t x, uint16_t y, uint16_t width, uint16_t height, char *strList);
+// TglWidget *tglWidgetListbox(uint16_t x, uint16_t y, uint16_t width, uint16_t height, char *strList);
+// void tglWidgetSetListboxPosition(TglWidget *tw, uint16_t position);
+void tglWidgetSetSelection(TglWidget *tw, uint16_t num);
 void tglWidgetSetSpinnerList(TglWidget *tw, char *spList);
 void tglWidgetSetProgressBarColor(TglWidget *tw, uint32_t c);
 void tglWidgetSetProgressBarNum(TglWidget *tw, uint16_t num);
@@ -391,11 +405,11 @@ void tglWidgetSetRadioText(TglWidget *tw, char *text);
 void tglWidgetSetFgColor(TglWidget *tw, uint32_t fgColor);
 void tglWidgetSetBgColor(TglWidget *tw, uint32_t bgColor);
 void tglWidgetSetFgBgColor(TglWidget *tw, uint32_t fgColor, uint32_t bgColor);
-TglWidget *tglWidgetTextbox(char *text, uint16_t x, uint16_t y, uint16_t width, uint16_t height);
+char *tglWidgetGetSelection(TglWidget *tw);
 int tglWidgetRegisterV(int count, ...);
 int tglIsInside(TglWidget *tw, uint16_t x, uint16_t y);
 void tglWidgetAddCallback(TglWidget *tw, void (*eCallback)(struct _tglWidget_ *tw, uint16_t x, uint16_t y, uint16_t p), TouchAction action);
-void tglWidgetEvent(uint16_t x, uint16_t y, uint16_t p, uint16_t t);
+void tglWidgetEvent(uint16_t x, uint16_t y, uint16_t p, uint16_t t, uint16_t c);
 void tglWidgetAddIcon(TglWidget *tw, char *iconName);
 void tglWidgetSetData(TglWidget *tw, char * data);
 char *tglWidgetGetData(TglWidget *tw);

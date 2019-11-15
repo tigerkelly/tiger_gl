@@ -28,11 +28,10 @@ pthread_t touchEvent;
 pthread_t touchEvent;
 
 void *_touchThread(void *param);
-int getTouchSample(uint16_t *rawX, uint16_t *rawY, uint16_t *rawPressure);
+int getTouchSample(uint16_t *rawX, uint16_t *rawY, uint16_t *rawPressure, uint16_t *rawCode);
 void getTouchScreenDetails(uint16_t *screenXmin,uint16_t *screenXmax,uint16_t *screenYmin,uint16_t *screenYmax);
 
 extern TglInfo *_tglInfo;
-extern void tglWidgetEvent(uint16_t x, uint16_t y, uint16_t p, uint16_t t);
 
 int tglTouchInit(char *device, 
 		uint16_t screenWidth, uint16_t screenHeight, uint16_t touchWidth, uint16_t touchHeight,
@@ -81,9 +80,10 @@ void tglTouchGetEvent() {
 	uint16_t rawX;
 	uint16_t rawY;
 	uint16_t rawPressure;
+	uint16_t rawCode;
 
 	int r = 0;
-	if ((r = getTouchSample(&rawX, &rawY, &rawPressure)) > 0) {
+	if ((r = getTouchSample(&rawX, &rawY, &rawPressure, &rawCode)) > 0) {
 		// printf("rawX %d, rawY %d, rawPressure %d, r %d\n", rawX, rawY, rawPressure, r);
 		// printf("rotate %d, tWidth %0.1f, tHeight %0.1f\n", rotateTouch, tWidth, tHeight);
 
@@ -102,7 +102,7 @@ void tglTouchGetEvent() {
 		}
 
 		if (sWidth == tWidth && sHeight == tHeight) {		// in case they are the same.
-			tglWidgetEvent(rawX, rawY, rawPressure, r);
+			tglWidgetEvent(rawX, rawY, rawPressure, r, rawCode);
 		} else if (sWidth > tWidth && sHeight > tHeight) {
 			int xWhole = (int)xScale;				// get the whole number part.
 			int yWhole = (int)yScale;
@@ -113,7 +113,7 @@ void tglTouchGetEvent() {
 			rawX += (int)((double)(rawX / xWhole) * xScale);
 			rawY += (int)((double)(rawY / yWhole) * yScale);
 
-			tglWidgetEvent(rawX, rawY, rawPressure, r);
+			tglWidgetEvent(rawX, rawY, rawPressure, r, rawCode);
 		} else {
 			// if screen resolution is less than touch resolution.
 			xScale = xScale - ((long)xScale);		// get the fractional part of scale.
@@ -123,7 +123,7 @@ void tglTouchGetEvent() {
 			rawX -= (int)((double)rawX * xScale);
 			rawY -= (int)((double)rawY * yScale);
 
-			tglWidgetEvent(rawX, rawY, rawPressure, r);
+			tglWidgetEvent(rawX, rawY, rawPressure, r, rawCode);
 		}
 	}
 }
@@ -221,17 +221,19 @@ void getTouchScreenDetails(int *screenXmin,int *screenXmax,int *screenYmin,int *
 #endif
 
 // Returns bit pattern of events.
-int getTouchSample(uint16_t *rawX, uint16_t *rawY, uint16_t *rawPressure) {
+int getTouchSample(uint16_t *rawX, uint16_t *rawY, uint16_t *rawPressure, uint16_t *rawCode) {
 	int ret = 0;
 	size_t rb;					// how many bytes were read
 	struct input_event ev;
-	static int oldX = 0, oldY = 0, oldPressure = 0;
+	static int oldX = 0, oldY = 0, oldPressure = 0, oldCode = 0;
 
 	*rawX = 0;
 	*rawY = 0;
 	*rawPressure = 0;
+	*rawCode = 0;
 
 	int startTouch = (TOUCH_START | TOUCH_X | TOUCH_Y | TOUCH_PRESSURE);
+	int moveTouch = (TOUCH_X | TOUCH_Y);
 
 	while(_stopTouchEvent == 0) {
 		rb = read(touchFd, &ev, sizeof(struct input_event));
@@ -241,24 +243,32 @@ int getTouchSample(uint16_t *rawX, uint16_t *rawY, uint16_t *rawPressure) {
 			if (ev.type ==  EV_SYN) {
 			} else if (ev.type == EV_KEY && ev.code == 330 && ev.value == 1) {	// start of touch
 				ret |= TOUCH_START;
+				*rawCode = ev.code;
 			} else if (ev.type == EV_KEY && ev.code == 330 && ev.value == 0) {	// end of touch
 				ret = TOUCH_STOP;
 				*rawX = oldX;
 				*rawY = oldY;
 				*rawPressure = oldPressure;
-				oldX = oldY = oldPressure = 0;
+				*rawCode = oldCode;
+				oldX = oldY = oldPressure = oldCode = 0;
 			} else if (ev.type == EV_ABS && ev.code == 0   && ev.value > 0) {	// get touch X position
 				oldX = *rawX = ev.value;
+				oldCode = *rawCode = ev.code;
 				ret |= TOUCH_X;
 			} else if (ev.type == EV_ABS && ev.code == 1   && ev.value > 0) {	// get touch Y position
 				oldY = *rawY = ev.value;
+				oldCode = *rawCode = ev.code;
 				ret |= TOUCH_Y;
 			} else if (ev.type == EV_ABS && ev.code == 24  && ev.value > 0) {	// get touch pressure
 				oldPressure = *rawPressure = ev.value;
+				oldCode = *rawCode = ev.code;
 				ret |= TOUCH_PRESSURE;
 			}
 
 			if (ret == startTouch || ret == TOUCH_STOP)
+				break;
+
+			if (ret == moveTouch)
 				break;
 		}
 	}

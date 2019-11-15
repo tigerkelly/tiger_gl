@@ -1,7 +1,6 @@
 
-/* NOTE: I am not using the uGui widgets.
- * To me they seem too confusing but I am not too bright.
- * And I wanted to be able to show a video, so I did my own.
+/* NOTE: I am not using the uGui widgets and windows.
+ * I wanted to be able to show a video, so I did my own.
  * KW
  */
 
@@ -23,6 +22,11 @@ extern TglInfo *_tglInfo;
 
 int _widgetId = 0;
 
+TGLBITMAP *upButton = NULL;
+TGLBITMAP *downButton = NULL;
+
+extern int twQue;
+
 extern TwList *_twWidgets;
 extern void _addAreaW(TglWidget *tw);
 
@@ -32,7 +36,9 @@ void _paintRadio(TglWidget *tw, bool flag);
 //void _paintTextbox(TglWidget *tw, bool flag);
 void _paintProgressBar(TglWidget *tw, bool flag);
 void _paintSpinner(TglWidget *tw, bool flag);
+//void _paintListbox(TglWidget *tw, bool flag);
 
+/* tglIsInside - Is x and Y inside the widget. */
 int tglIsInside(TglWidget *tw, uint16_t x, uint16_t y) {
 
 	if (x >= tw->x && x < (tw->x + tw->width) && y >= tw->y && y < (tw->y + tw->height))
@@ -41,15 +47,22 @@ int tglIsInside(TglWidget *tw, uint16_t x, uint16_t y) {
 	return 0;
 }
 
+/* tglWidgetRegisterV - Registers widgets with the library.
+ *	This keeps track of widgets being displayed.
+ *	Normally called by the tglWidgetRegister #define in tiger_gl.h
+ *  *** NOTE: A widget must be registered to be displayed. ***
+ */
 int tglWidgetRegisterV(int count, ...) {
 	va_list args;
 	va_start(args, count);
 
 	for (int i = 0; i < count; i++) {
 		TglWidget *tw = va_arg(args, TglWidget *);
+		tw->isRegistered = true;
 
 		if (tw->paintWidget != NULL)
 			tw->paintWidget(tw, 0);
+
 
 		twAdd(_twWidgets, tw);
 	}
@@ -59,6 +72,10 @@ int tglWidgetRegisterV(int count, ...) {
 	return 0;
 }
 
+/* tglWidgetSetData - Sets the user data of a widget.
+ *	This is normally a string value but you can use other data types
+ *	but you will have to handle the convertion your self.
+ */
 void tglWidgetSetData(TglWidget *tw, char * data) {
 
 	if (data == NULL || tw == NULL)
@@ -70,6 +87,7 @@ void tglWidgetSetData(TglWidget *tw, char * data) {
 	tw->data = strdup(data);
 }
 
+/* tglWidgetgetData - Retrives the user data of the widget. */
 char *tglWidgetGetData(TglWidget *tw) {
 	if (tw == NULL)
 		return NULL;
@@ -77,9 +95,15 @@ char *tglWidgetGetData(TglWidget *tw) {
 	return tw->data;
 }
 
-void tglWidgetEvent(uint16_t x, uint16_t y, uint16_t p, uint16_t t) {
+/* tglWidgetEvent - This function is called by the tglTouchGetEvent() function
+ *	if a touch event is detected.
+ *	Normally not called by anyone else.
+ */
+void tglWidgetEvent(uint16_t x, uint16_t y, uint16_t p, uint16_t t, uint16_t c) {
 	
 	int flag = 0;
+	// uint16_t direction = 0;
+	ItemType it;
 
 	TwData *h = _twWidgets->head;
 
@@ -89,93 +113,86 @@ void tglWidgetEvent(uint16_t x, uint16_t y, uint16_t p, uint16_t t) {
 
 			if (tws->widgetType == WIDGET_BUTTON) {
 				if ((t & TOUCH_START) == TOUCH_START) {
-					_paintButton(tws, true);
 					if (tws->touchAction == TOUCH_DOWN) {
 						flag = 1;
+						_paintButton(tws, true);
+						it.p = (char *)tws;
+						cqAdd(twQue, &it);
 					}
 				} else if ((t & TOUCH_STOP) == TOUCH_STOP) {
-					_paintButton(tws, false);
 					if (tws->touchAction == TOUCH_UP) {
 						flag = 1;
+						_paintButton(tws, true);
+						it.p = (char *)tws;
+						cqAdd(twQue, &it);
 					}
 				}
-			}
-
-			if (tws->widgetType == WIDGET_SPINNER) {
+			} else if (tws->widgetType == WIDGET_SPINNER) {
 				if ((t & TOUCH_START) == TOUCH_START) {
-					if (tws->spNum < (tws->spCnt - 1))
-						tws->spNum++;
-					else
-						tws->spNum = 0;
-					_paintSpinner(tws, true);
 					if (tws->touchAction == TOUCH_DOWN) {
 						flag = 1;
+						if (tws->selected < (tws->cnt - 1))
+							tws->selected++;
+						else
+							tws->selected = 0;
+						_paintSpinner(tws, true);
+						it.p = (char *)tws;
+						cqAdd(twQue, &it);
 					}
 				} else if ((t & TOUCH_STOP) == TOUCH_STOP) {
-					_paintSpinner(tws, false);
 					if (tws->touchAction == TOUCH_UP) {
 						flag = 1;
+						if (tws->selected < (tws->cnt - 1))
+							tws->selected++;
+						else
+							tws->selected = 0;
+						_paintSpinner(tws, true);
+						it.p = (char *)tws;
+						cqAdd(twQue, &it);
 					}
 				}
-			}
-
-			if (tws->widgetType == WIDGET_CHECKBOX) {
-				if ((t & TOUCH_START) == TOUCH_START) {
-					tws->checked = tws->checked == true ? false : true;
-					_paintCheckbox(tws, tws->checked);
-					if (tws->touchAction == TOUCH_DOWN) {
-						flag = 1;
-					}
-				} else if ((t & TOUCH_STOP) == TOUCH_STOP) {
-					_paintCheckbox(tws, tws->checked);
-					if (tws->touchAction == TOUCH_UP) {
-						flag = 1;
-					}
-				}
-			}
-
-			if (tws->widgetType == WIDGET_RADIO) {
-				if ((t & TOUCH_START) == TOUCH_START) {
-					tws->checked = tws->checked == true ? false : true;
-					_paintRadio(tws, tws->checked);
-					if (tws->touchAction == TOUCH_DOWN) {
-						flag = 1;
-					}
-				} else if ((t & TOUCH_STOP) == TOUCH_STOP) {
-					_paintRadio(tws, tws->checked);
-					if (tws->touchAction == TOUCH_UP) {
-						flag = 1;
-					}
-				}
-			}
-
 #if(0)
-			if (tws->widgetType == WIDGET_TEXTBOX) {
+			} else if (tws->widgetType == WIDGET_LISTBOX) {
 				if ((t & TOUCH_START) == TOUCH_START) {
-					TwData *h2 = _twWidgets->head;
-
-					while(h2 != NULL) {
-						if (h2->tw->widgetType == WIDGET_TEXTBOX) {
-							h2->tw->hasFocus = false;
-							_paintTextbox(h2->tw, h2->tw->hasFocus);
-						}
-						h2 = h2->next;
-					}
-					tws->hasFocus = true;
-					_paintTextbox(tws, tws->checked);
+					_paintListbox(tws, true);
 					if (tws->touchAction == TOUCH_DOWN) {
 						flag = 1;
 					}
 				} else if ((t & TOUCH_STOP) == TOUCH_STOP) {
-					_paintTextbox(tws, tws->checked);
+					_paintListbox(tws, false);
+					if (tws->touchAction == TOUCH_UP) {
+						flag = 1;
+					}
+				} else if (t == (TOUCH_X | TOUCH_Y)) {
+				}
+#endif
+			} else if (tws->widgetType == WIDGET_CHECKBOX) {
+				if ((t & TOUCH_START) == TOUCH_START) {
+					tws->checked = tws->checked == true ? false : true;
+					_paintCheckbox(tws, tws->checked);
+					if (tws->touchAction == TOUCH_DOWN) {
+						flag = 1;
+					}
+				} else if ((t & TOUCH_STOP) == TOUCH_STOP) {
+					_paintCheckbox(tws, tws->checked);
 					if (tws->touchAction == TOUCH_UP) {
 						flag = 1;
 					}
 				}
-			}
-#endif
-
-			if (tws->widgetType == WIDGET_RADIO) {
+			} else if (tws->widgetType == WIDGET_RADIO) {
+				if ((t & TOUCH_START) == TOUCH_START) {
+					tws->checked = tws->checked == true ? false : true;
+					_paintRadio(tws, tws->checked);
+					if (tws->touchAction == TOUCH_DOWN) {
+						flag = 1;
+					}
+				} else if ((t & TOUCH_STOP) == TOUCH_STOP) {
+					_paintRadio(tws, tws->checked);
+					if (tws->touchAction == TOUCH_UP) {
+						flag = 1;
+					}
+				}
+			} else if (tws->widgetType == WIDGET_RADIO) {
 				if ((t & TOUCH_START) == TOUCH_START) {
 					TwData *h2 = _twWidgets->head;
 
@@ -206,11 +223,25 @@ void tglWidgetEvent(uint16_t x, uint16_t y, uint16_t p, uint16_t t) {
 					tws->eCallback(tws, x, y, p);
 			}
 			break;
+		} else {
+			// A move event in the x or y direction.
+			// if (t == (TOUCH_X | TOUCH_Y) && tws->widgetType == WIDGET_LISTBOX) {
+			// 	if (y > oldY)
+			// 		direction = SCROLL_UP;
+			// 	else if ((y < oldY)
+			// 		direction = SCROLL_DOWN;
+			// 	oldY = y;
+			// }
 		}
 		h = h->next;
 	}
 }
 
+/* tglWidgetDelete - Deletes a widget and frees its memory.
+ *	You must have special care when calling this function to delete
+ *	a widget because it can have far reaching effects.
+ *	I normally never call this function.
+ */
 void tglWidgetDelete(TglWidget *tw) {
 	if (tw == NULL)
 		return;
@@ -221,8 +252,8 @@ void tglWidgetDelete(TglWidget *tw) {
 	if (tw->iconName != NULL)
 		free(tw->iconName);
 	
-	if (tw->spList != NULL)
-		free(tw->spList);
+	if (tw->strList != NULL)
+		free(tw->strList);
 
 	if (tw->icon != NULL)
 		FreeImage_Unload((FIBITMAP *)tw->icon);
@@ -230,6 +261,9 @@ void tglWidgetDelete(TglWidget *tw) {
 	free(tw);
 }
 
+/* tglWidgetImage - Creates widget that an image can be displayed to.
+ *	x and y are top left corner.
+ */
 TglWidget *tglWidgetImage(uint16_t x, uint16_t y, uint16_t width, uint16_t height) {
 	TglWidget *tw = NULL;
 
@@ -247,13 +281,20 @@ TglWidget *tglWidgetImage(uint16_t x, uint16_t y, uint16_t width, uint16_t heigh
 	return tw;
 }
 
-// action - is whether you want the callback to occur at touch or release.
-// TOUCH_DOWN = touch, TOUCH_UP = release
+/* tglWidgetAddCallback - Adds a callback function to a widget.
+ *	action - is whether you want the callback to occur at touch or release.
+ *  TOUCH_DOWN = touch, TOUCH_UP = release
+ *	Currently only one callback per widget.
+ */
 void tglWidgetAddCallback(TglWidget *tw, void (*eCallback)(struct _tglWidget_ *tw, uint16_t x, uint16_t y, uint16_t p), TouchAction action) {
 	tw->eCallback = eCallback;
 	tw->touchAction = action;
 }
 
+/* tglWidgetAddIcon - Adds an icon image to the widget if it supports it.
+ *	icnName is a path to an image file.
+ *	Any image supported by the FreeImage libray is supported.
+ */
 void tglWidgetAddIcon(TglWidget *tw, char *iconName) {
 	if (tw == NULL)
 		return;
@@ -265,11 +306,16 @@ void tglWidgetAddIcon(TglWidget *tw, char *iconName) {
 	tw->icon = tglImageLoad(iconName);
 }
 
+/* _paintButton - Function to paint a button widget.
+ *	 I could have one paint function for all widget types but I
+ *	 think that code looks ugly and this is simpler.
+ */
 void _paintButton(TglWidget *tw, bool flag) {
 
 	tglSetAutoUpdate(TGL_NO_AUTOUPDATE);
 
 	if (flag == true) {
+		tw->isPressed = true;
 		tglDrawFillRoundRect(tw->x, tw->y, tw->width, tw->height, 5, TGL_COLOR_DARKGRAY);
 		tglDrawRoundRect(tw->x+7, tw->y+7, tw->width-14, tw->height-14, 8, tw->fgColor);
 		tglDrawFillRoundRect(tw->x+8, tw->y+8, tw->width-16, tw->height-16, 5, tw->bgColor + 0x202020);
@@ -277,6 +323,7 @@ void _paintButton(TglWidget *tw, bool flag) {
 		tglDrawFillRoundRect(tw->x, tw->y, tw->width, tw->height, 5, tw->bgColor);
 		tglDrawRoundRect(tw->x+7, tw->y+7, tw->width-14, tw->height-14, 8, tw->fgColor);
 		tglDrawFillRoundRect(tw->x+8, tw->y+8, tw->width-16, tw->height-16, 5, tw->bgColor + 0x202020);
+		tw->isPressed = false;
 	}
 
 	if (tw->iconName) {
@@ -307,7 +354,18 @@ void _paintButton(TglWidget *tw, bool flag) {
 		UG_SetFont(tw->textFont);
 
 		UG_FONT *gf = tw->textFont;
-		int sw = (gf->char_width * strlen(tw->text));
+
+		// UG_PrintFontInfo(gf);
+
+		int sw = 0;
+		int len = strlen(tw->text);
+		if (gf->widths == NULL) {
+			sw = (gf->char_width * len);
+		} else {
+			for (int i = 0; i < len; ++i) {
+				sw += gf->widths[(int)tw->text[i] - gf->start_char];
+			}
+		}
 		int xp = 0;
 		int yp = 0;
 
@@ -329,10 +387,12 @@ void _paintButton(TglWidget *tw, bool flag) {
 
 	tglSetAutoUpdate(TGL_AUTOUPDATE);
 
-	_addAreaW(tw);
+	if (tw->isRegistered)
+		_addAreaW(tw);
 
 }
 
+/* tglWidgetSetButtonText - Changes the button text and calls the _paintButton function. */
 void tglWidgetSetButtonText(TglWidget *tw, char *text) {
 	 if (text != NULL) {
         if (tw->text != NULL)
@@ -344,9 +404,11 @@ void tglWidgetSetButtonText(TglWidget *tw, char *text) {
         tw->text = NULL;
     }
     _paintButton(tw, false);
-    _addAreaW(tw);
+	if (tw->isRegistered)
+		_addAreaW(tw);
 }
 
+#if(0)
 void tglWidgetTouched(TglWidget *tw) {
 	tw->paintWidget(tw, 0);
 
@@ -359,7 +421,9 @@ void tglWidgetTouched(TglWidget *tw) {
 
 	tw->paintWidget(tw, 1);
 }
+#endif
 
+/* tglWidgetButton - Create a button */
 TglWidget *tglWidgetButton(char *text, uint16_t x, uint16_t y, uint16_t width, uint16_t height) {
 	TglWidget *tw = NULL;
 
@@ -426,7 +490,8 @@ void _paintTextbox(TglWidget *tw, bool flag) {
 void tglWidgetSetTextboxFocus(TglWidget *tw, bool hasFocus) {
 	tw->hasFocus = hasFocus;
 
-	_addAreaW(tw);
+	if (tw->isRegistered)
+		_addAreaW(tw);
 }
 
 void tglWidgetSetTextboxText(TglWidget *tw, char *text) {
@@ -440,7 +505,8 @@ void tglWidgetSetTextboxText(TglWidget *tw, char *text) {
 		tw->text = NULL;
 	}
 	_paintTextbox(tw, false);
-	_addAreaW(tw);
+	if (tw->isRegistered)
+		_addAreaW(tw);
 }
 
 TglWidget *tglWidgetTextbox(char *text, uint16_t x, uint16_t y, uint16_t width, uint16_t height) {
@@ -469,6 +535,7 @@ TglWidget *tglWidgetTextbox(char *text, uint16_t x, uint16_t y, uint16_t width, 
 }
 #endif
 
+/* _paintLabel - Paints a label type widget. */
 void _paintLabel(TglWidget *tw, bool flag) {
 
 	tglSetAutoUpdate(TGL_NO_AUTOUPDATE);
@@ -493,30 +560,37 @@ void _paintLabel(TglWidget *tw, bool flag) {
 
 	tglSetAutoUpdate(TGL_AUTOUPDATE);
 
-	_addAreaW(tw);
+	if (tw->isRegistered)
+		_addAreaW(tw);
 }
 
+/* tglWidgetSetFont - Sets the font used by the widget. */
 void tglWidgetSetFont(TglWidget *tw, char *fontName) {
 	tw->textFont = UG_FontSelectByName(fontName);
 }
 
+/* tglWidgetSetTextColor - Sets the text color used by the widget. */
 void tglWidgetSetTextColor(TglWidget *tw, uint32_t c) {
 	tw->txtColor = c;
 }
 
+/* tglWidgetSetFgColor - Sets the foreground color used by the widget. */
 void tglWidgetSetFgColor(TglWidget *tw, uint32_t fgColor) {
 	tw->fgColor = fgColor;
 }
 
+/* tglWidgetSetBgColor - Sets the background color used by the widget. */
 void tglWidgetSetBgColor(TglWidget *tw, uint32_t bgColor) {
 	tw->bgColor = bgColor;
 }
 
+/* tglWidgetSetFgBgColor - Sets both foreground and  background color used by the widget. */
 void tglWidgetSetFgBgColor(TglWidget *tw, uint32_t fgColor, uint32_t bgColor) {
 	tglWidgetSetFgColor(tw, fgColor);
 	tglWidgetSetBgColor(tw, bgColor);
 }
 
+/* tglWidgetSetLabelText - Set label text and calls the _paintLabel function. */
 void tglWidgetSetLabelText(TglWidget *tw, char *text) {
 	if (text != NULL) {
 		if (tw->text != NULL)
@@ -528,9 +602,11 @@ void tglWidgetSetLabelText(TglWidget *tw, char *text) {
 		tw->text = NULL;
 	}
 	_paintLabel(tw, false);
-	_addAreaW(tw);
+	if (tw->isRegistered)
+		_addAreaW(tw);
 }
 
+/* tglWidgetLabel - Creates a label widget. */
 TglWidget *tglWidgetLabel(char *text, uint16_t x, uint16_t y, uint16_t width, uint16_t height) {
 	TglWidget *tw = NULL;
 
@@ -553,11 +629,10 @@ TglWidget *tglWidgetLabel(char *text, uint16_t x, uint16_t y, uint16_t width, ui
 	}
 	tw->paintWidget = _paintLabel;
 
-	// tglDrawFillRect(x, y, width, height, tw->bgColor);
-
 	return tw;
 }
 
+/* _paintCheckbox - Paints a checkbox widget. */
 void _paintCheckbox(TglWidget *tw, bool flag) {
 
 	tglSetAutoUpdate(TGL_NO_AUTOUPDATE);
@@ -596,9 +671,11 @@ void _paintCheckbox(TglWidget *tw, bool flag) {
 
 	tglSetAutoUpdate(TGL_AUTOUPDATE);
 
-	_addAreaW(tw);
+	if (tw->isRegistered)
+		_addAreaW(tw);
 }
 
+/* tglWidgetSetCheckboxText - Sets the text of a checkbox widget. */
 void tglWidgetSetCheckboxText(TglWidget *tw, char *text) {
 	 if (text != NULL) {
         if (tw->text != NULL)
@@ -610,9 +687,11 @@ void tglWidgetSetCheckboxText(TglWidget *tw, char *text) {
         tw->text = NULL;
     }
     _paintCheckbox(tw, false);
-    _addAreaW(tw);
+	if (tw->isRegistered)
+		_addAreaW(tw);
 }
 
+/* tglWidgetCheckbox - Create a checkbox widget. */
 TglWidget *tglWidgetCheckbox(char *text, uint16_t x, uint16_t y, uint16_t width, uint16_t height) {
 	 TglWidget *tw = NULL;
 
@@ -638,6 +717,7 @@ TglWidget *tglWidgetCheckbox(char *text, uint16_t x, uint16_t y, uint16_t width,
     return tw;
 }
 
+/* _paintRadio = Paints a radio button widget. */
 void _paintRadio(TglWidget *tw, bool flag) {
 
 	tglSetAutoUpdate(TGL_NO_AUTOUPDATE);
@@ -671,9 +751,11 @@ void _paintRadio(TglWidget *tw, bool flag) {
 
 	tglSetAutoUpdate(TGL_AUTOUPDATE);
 
-	_addAreaW(tw);
+	if (tw->isRegistered)
+		_addAreaW(tw);
 }
 
+/* tglWidgetSetRadioText - Sets the text of a radio button widget. */
 void tglWidgetSetRadioText(TglWidget *tw, char *text) {
 	 if (text != NULL) {
         if (tw->text != NULL)
@@ -685,18 +767,26 @@ void tglWidgetSetRadioText(TglWidget *tw, char *text) {
         tw->text = NULL;
     }
     _paintRadio(tw, false);
-    _addAreaW(tw);
+	if (tw->isRegistered)
+		_addAreaW(tw);
 }
 
+/* tglWidgetSetRadioGroup - Sets the group the widget belongs to.
+ *	All radio buttons of the same group call only have one radio button selected
+ *	at any given time.
+ */
 void tglWidgetSetRadioGroup(TglWidget *tw, uint16_t groupId) {
 	tw->groupId = groupId;
 }
 
+/* tglWidgetSetSelected - Sets the item selected within a widget. */
 void tglWidgetSetSelected(TglWidget *tw, bool selected) {
 	tw->checked = selected;
-	_addAreaW(tw);
+	if (tw->isRegistered)
+		_addAreaW(tw);
 }
 
+/* tglWidgetRadio - Creates a radio button. */
 TglWidget *tglWidgetRadio(char *text, uint16_t x, uint16_t y, uint16_t width, uint16_t height) {
 	 TglWidget *tw = NULL;
 
@@ -722,6 +812,7 @@ TglWidget *tglWidgetRadio(char *text, uint16_t x, uint16_t y, uint16_t width, ui
     return tw;
 }
 
+/* _paintProgressBar - Paints a progress bar widget. */
 void _paintProgressBar(TglWidget *tw, bool flag) {
 
 	tglSetAutoUpdate(TGL_NO_AUTOUPDATE);
@@ -747,7 +838,15 @@ void _paintProgressBar(TglWidget *tw, bool flag) {
 		char textNum[32];
 		sprintf(textNum, "%d%%", tw->pbNum);
 
-		int sw = (gf->char_width * strlen(textNum));
+		int sw =0;
+		int len = strlen(textNum);
+		if (gf->widths == NULL) {
+			sw = (gf->char_width * len);
+		} else {
+			for ( int i = 0; i < len; ++i) {
+				sw += gf->widths[textNum[i] - gf->start_char];
+			}
+		}
 		int xp = ((tw->width - sw) / 2) + tw->x;
 		int yp = ((tw->height - gf->char_height) / 2) + tw->y;
 
@@ -758,17 +857,21 @@ void _paintProgressBar(TglWidget *tw, bool flag) {
 
 	tglSetAutoUpdate(TGL_AUTOUPDATE);
 
+	if (tw->isRegistered)
 	_addAreaW(tw);
 }
 
+/* tglWidgetSetProgressBarColor - Sets the color used for progress. */
 void tglWidgetSetProgressBarColor(TglWidget *tw, uint32_t c) {
 	tw->pbColor = c;
 }
 
+/* tglWidgetSetProgressBarNum - Sets the progress value. */
 void tglWidgetSetProgressBarNum(TglWidget *tw, uint16_t num) {
 	tw->pbNum = num;
 }
 
+/* tglWidgetProgressBar - Creates a progress bar widget. */
 TglWidget *tglWidgetProgressBar(uint16_t x, uint16_t y, uint16_t width, uint16_t height, bool pbText, uint32_t c) {
 	 TglWidget *tw = NULL;
 
@@ -794,16 +897,17 @@ TglWidget *tglWidgetProgressBar(uint16_t x, uint16_t y, uint16_t width, uint16_t
     return tw;
 }
 
-int toSpinnerArray(TglWidget *tw, char *str) {
+/* toStringArray - Converts a comma speerated string list into a string array. */
+int toStringArray(TglWidget *tw, char *str) {
 	int longest = 0;
 
-	tw->spCnt = countArgs(str);
+	tw->cnt = countArgs(str);
 
-	char *args[tw->spCnt + 1];
+	char *args[tw->cnt + 1];
 
 	char *s = strdup(str);		// parse modifies string.
 
-	int r = parse(s, ",", args, tw->spCnt + 1);
+	int r = parse(s, ",", args, tw->cnt + 1);
 
 	if (r <= 0) {
 		printf("parse returned error %d\n", r);
@@ -817,14 +921,14 @@ int toSpinnerArray(TglWidget *tw, char *str) {
 			longest = x;
 	}
 
-	tw->spLen = longest + 1;
+	tw->len = longest + 1;
 
-	tw->spList = (char *)calloc(tw->spCnt, tw->spLen);
-	char *p = tw->spList;
+	tw->strList = (char *)calloc(tw->cnt, tw->len);
+	char *p = tw->strList;
 
 	for (int i = 0; i < r; i++) {
 		strcpy(p, args[i]);
-		p += tw->spLen;
+		p += tw->len;
 	}
 
 	free(s);
@@ -832,39 +936,65 @@ int toSpinnerArray(TglWidget *tw, char *str) {
 	return r;
 }
 
-void tglWidgetSetSpinnerNum(TglWidget *tw, uint16_t num) {
+/* tglWidgetSetSelection - Sets the selected item in a Spinner widget. */
+void tglWidgetSetSelection(TglWidget *tw, uint16_t num) {
 
-	if (num < 0 || num >= tw->spCnt)
-		tw->spNum = 0;
-	else
-		tw->spNum = num;
+	if (tw->widgetType != WIDGET_SPINNER && tw->widgetType != WIDGET_LISTBOX) {
+		return;
+	}
 
-	_addAreaW(tw);
+	if (num < 0 || num >= tw->cnt) {
+		tw->selected = 0;
+	} else {
+		tw->selected = num;
+	}
+
+	if (tw->isRegistered)
+		_addAreaW(tw);
 }
 
+/* tglWidgetGetSelection - Get the selected item in a Spinner widget. */
+char *tglWidgetGetSelection(TglWidget *tw) {
+	char *s = NULL;
+
+	if (tw->widgetType == WIDGET_SPINNER) {
+		s = (char *)(tw->strList + (tw->len * tw->selected));
+	}
+
+	return s;
+}
+
+/* tglWidgetSetSpinnerList - Sets the spinners list. */
 void tglWidgetSetSpinnerList(TglWidget *tw, char *spList) {
 
 	if (spList != NULL) {
-		if (tw->spList != NULL)
-			free(tw->spList);
+		if (tw->strList != NULL)
+			free(tw->strList);
 
-		toSpinnerArray(tw, spList);
-		if (tw->spNum >= tw->spCnt)
-			tw->spNum = 0;
+		toStringArray(tw, spList);
+		if (tw->selected >= tw->cnt)
+			tw->selected = 0;
 	}
 
-	_addAreaW(tw);
+	if (tw->isRegistered)
+		_addAreaW(tw);
 }
 
+/* _paintSpinner - Paints a spinner type widget. */
 void _paintSpinner(TglWidget *tw, bool flag) {
 
 	tglSetAutoUpdate(TGL_NO_AUTOUPDATE);
 
-	tglDrawFillRect(tw->x, tw->y, tw->width, tw->height, TGL_COLOR_WHITE);
-	tglDrawRect(tw->x+4, tw->y+4, tw->width-10, tw->height-10, tw->fgColor);
-	tglDrawFillRect(tw->x+5, tw->y+5, tw->width-12, tw->height-12, TGL_COLOR_LIGHTERGRAY);
+	printf("flag %d\n", flag);
 
-	if (tw->spList != NULL) {
+	if (flag)
+		tglDrawFillRect(tw->x, tw->y, tw->width, tw->height, TGL_COLOR_DARKGRAY);
+	else
+		tglDrawFillRect(tw->x, tw->y, tw->width, tw->height, TGL_COLOR_WHITE);
+	tglDrawRect(tw->x+5, tw->y+5, tw->width-12, tw->height-12, tw->fgColor);
+	tglDrawFillRect(tw->x+6, tw->y+6, tw->width-14, tw->height-14, TGL_COLOR_LIGHTERGRAY);
+
+	if (tw->strList != NULL) {
 		if (tw->textFont == NULL)
 			tw->textFont = UG_GetFont("FONT_6x10");
 
@@ -875,17 +1005,21 @@ void _paintSpinner(TglWidget *tw, bool flag) {
 		int xp = tw->x + 12;
 		int yp = ((tw->height - gf->char_height) / 2) + tw->y;
 
-		tglDrawSetClipRegion(tw->x+5, tw->y+5, tw->width-12, tw->height-12);		
-		tglDrawPutString(xp, yp, (char *)(tw->spList + (tw->spLen * tw->spNum)), tw->fgColor, 0, true);
+		tglDrawSetClipRegion(tw->x+6, tw->y+6, tw->width-14, tw->height-14);		
+		// printf("selected %s\n", (char *)(tw->strList + (tw->len * tw->selected)));
+		tglDrawPutString(xp, yp, (char *)(tw->strList + (tw->len * tw->selected)), tw->fgColor, 0, true);
 		tglDrawUnsetClipRegion();
 	}
 
 	tglSetAutoUpdate(TGL_AUTOUPDATE);
 
-	_addAreaW(tw);
+	if (tw->isRegistered)
+		_addAreaW(tw);
 }
 
-// spList is a comma seperated list of strings, ie: "kelly,was here,and,gone." 4 parts
+/* tglWidgetSpinner - Creates a spinnet type widget.
+ *	spList is a comma seperated list of strings, ie: "kelly,was here,and,gone." 4 parts
+ */
 TglWidget *tglWidgetSpinner(uint16_t x, uint16_t y, uint16_t width, uint16_t height, char *spList) {
 	 TglWidget *tw = NULL;
 
@@ -899,7 +1033,7 @@ TglWidget *tglWidgetSpinner(uint16_t x, uint16_t y, uint16_t width, uint16_t hei
 	tw->pbNum = 0;
 	tw->pbMax = 100;
 	if (spList != NULL) {
-		toSpinnerArray(tw, spList);
+		toStringArray(tw, spList);
 	}
 	tw->fgColor = TGL_COLOR_BLACK;
 	tw->bgColor = TGL_COLOR_WHITE;
@@ -911,3 +1045,93 @@ TglWidget *tglWidgetSpinner(uint16_t x, uint16_t y, uint16_t width, uint16_t hei
 
     return tw;
 }
+
+#if(0)
+void _paintListbox(TglWidget *tw, bool flag) {
+
+	tglSetAutoUpdate(TGL_NO_AUTOUPDATE);
+
+	tglDrawFillRect(tw->x, tw->y, tw->width, tw->height, TGL_COLOR_WHITE);
+	tglDrawRect(tw->x+5, tw->y+5, tw->width-12, tw->height-12, tw->fgColor);
+
+	uint16_t upX = tw->x + tw->width - 13;
+	uint16_t upY = tw->y+5;
+	uint16_t upWidth = 12;
+	uint16_t upHeight = (tw->height-12);
+
+	tglDrawRoundRect(upX, upY, upWidth, upHeight, 10, TGL_COLOR_BLACK);
+	tglDrawFillRoundRect(upX+2, upY+2, upWidth-4, upHeight-4, 5, TGL_COLOR_LIGHTERGRAY);
+
+	UG_FONT *gf = NULL;
+
+	if (tw->strList != NULL) {
+		if (tw->textFont == NULL)
+			tw->textFont = UG_GetFont("FONT_6x10");
+
+		UG_SetFont(tw->textFont);
+
+		gf = tw->textFont;
+
+		// UG_PrintFontInfo(gf);
+
+		int padding = 9;
+
+		int cnt = (tw->height-12) / (gf->char_height + padding);
+
+		int left = tw->height - 12;
+		int xp = tw->x+9;
+		int yp = tw->y+9;
+		for (int i = tw->position; i < tw->cnt && cnt >= 0; i++) {
+			if (left < (gf->char_height + padding))
+				tglDrawSetClipRegion(xp, yp, tw->width-25, ((gf->char_height + padding + 4) - abs(left)));		
+			else
+				tglDrawSetClipRegion(xp, yp, tw->width-25, gf->char_height);		
+			tglDrawPutString(xp, yp, (char *)(tw->strList + (tw->len * i)), tw->fgColor, 0, true);
+			tglDrawUnsetClipRegion();
+
+			tglDrawLine(xp, yp + gf->char_height + (padding / 2) + 1, xp + (tw->width - 25), yp + gf->char_height + (padding / 2) + 1, TGL_COLOR_BLACK);
+
+			yp += gf->char_height + padding;
+			left -= gf->char_height + padding;
+			--cnt;
+		}
+	}
+
+	tglSetAutoUpdate(TGL_AUTOUPDATE);
+
+	if (tw->isRegistered)
+		_addAreaW(tw);
+}
+
+void tglWidgetSetListboxPosition(TglWidget *tw, uint16_t position) {
+	tw->position = position;
+
+	if (tw->isRegistered)
+		_addAreaW(tw);
+}
+
+TglWidget *tglWidgetListbox(uint16_t x, uint16_t y, uint16_t width, uint16_t height, char *strList) {
+	 TglWidget *tw = NULL;
+
+    tw = (TglWidget *)calloc(1, sizeof(TglWidget));
+    if (tw == NULL)
+        return NULL;
+
+    tw->widgetType = WIDGET_LISTBOX;
+    tw->widgetId = _widgetId++;
+	tw->txtColor = TGL_COLOR_BLACK;
+	tw->selected = 0;
+	if (strList != NULL) {
+		toStringArray(tw, strList);
+	}
+	tw->fgColor = TGL_COLOR_BLACK;
+	tw->bgColor = TGL_COLOR_WHITE;
+    tw->x = x;
+    tw->y = y;
+    tw->width = width;
+    tw->height = height;
+    tw->paintWidget = _paintListbox;
+
+    return tw;
+}
+#endif

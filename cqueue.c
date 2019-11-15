@@ -340,6 +340,7 @@ int cqAdd(int cqNum, ItemType *value) {
  *   cqNum = Queue index
  *   value = Place value from queue here.
  *   block = if true then block waiting on an item else return null if queue empty
+ *   ms = Timeout in milliseconds, if CQ_TIMERBLOCK is used.
  *
  *   returns -1 on error or empty queue
  *           else 0
@@ -430,7 +431,7 @@ int cqRemoveTimed(int cqNum, ItemType *value, int timeout) {
 		ts.tv_nsec += (t % BILLION);
 
 		// block waiting on data to arrive or time out.
-//		printf("Waiting on queue %s  %d\n", cqGetName(cqNum), _cqueues[cqNum]->cqItemCount);
+		// printf("Waiting on queue %s  %d\n", cqGetName(cqNum), _cqueues[cqNum]->cqItemCount);
 		while (cp->cqItemCount == 0) {
 			rc = pthread_cond_timedwait(&cp->cqCond, &cp->cqLock, &ts);
 			if (rc == ETIMEDOUT) {
@@ -438,7 +439,7 @@ int cqRemoveTimed(int cqNum, ItemType *value, int timeout) {
 				return -2;
 			}
 		}
-//		printf("Awake from queue. %s %d\n", cqGetName(cqNum), cp->cqItemCount);
+		// printf("Awake from queue. %s %d\n", cqGetName(cqNum), cp->cqItemCount);
 	}
 
 	cp->queOut = (cp->queOut + 1) % cp->arrSize;

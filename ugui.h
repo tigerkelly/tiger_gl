@@ -72,6 +72,72 @@ extern UG_FONT FONT_22X36;
 extern UG_FONT FONT_24X40;
 extern UG_FONT FONT_32X53;
 
+extern UG_FONT FreeMono_13X18;
+extern UG_FONT FreeMono_15X22;
+extern UG_FONT FreeMono_17X24;
+extern UG_FONT FreeMono_19X27;
+extern UG_FONT FreeMono_21X30;
+extern UG_FONT FreeMono_25X36;
+extern UG_FONT FreeMono_34X47;
+extern UG_FONT FreeMonoBold_13X19;
+extern UG_FONT FreeMonoBold_18X22;
+extern UG_FONT FreeMonoBold_19X26;
+extern UG_FONT FreeMonoBold_21X28;
+extern UG_FONT FreeMonoBold_23X31;
+extern UG_FONT FreeMonoBold_27X37;
+extern UG_FONT FreeMonoBold_36X50;
+extern UG_FONT FreeMonoOblique_15X18;
+extern UG_FONT FreeMonoOblique_18X22;
+extern UG_FONT FreeMonoOblique_20X24;
+extern UG_FONT FreeMonoOblique_22X27;
+extern UG_FONT FreeMonoOblique_24X30;
+extern UG_FONT FreeMonoOblique_28X36;
+extern UG_FONT FreeMonoOblique_38X48;
+
+extern UG_FONT FreeSerif_20X20;
+extern UG_FONT FreeSerif_23X24;
+extern UG_FONT FreeSerif_27X26;
+extern UG_FONT FreeSerif_30X29;
+extern UG_FONT FreeSerif_33X33;
+extern UG_FONT FreeSerif_39X39;
+extern UG_FONT FreeSerif_51X52;
+extern UG_FONT FreeSerifBold_20X19;
+extern UG_FONT FreeSerifBold_24X23;
+extern UG_FONT FreeSerifBold_28X27;
+extern UG_FONT FreeSerifBold_31X31;
+extern UG_FONT FreeSerifBold_34X33;
+extern UG_FONT FreeSerifBold_40X39;
+extern UG_FONT FreeSerifBold_54X53;
+extern UG_FONT FreeSerifItalic_19X19;
+extern UG_FONT FreeSerifItalic_22X23;
+extern UG_FONT FreeSerifItalic_26X27;
+extern UG_FONT FreeSerifItalic_28X30;
+extern UG_FONT FreeSerifItalic_31X33;
+extern UG_FONT FreeSerifItalic_37X40;
+extern UG_FONT FreeSerifItalic_50X53;
+
+extern UG_FONT FreeSans_19X22;
+extern UG_FONT FreeSans_23X25;
+extern UG_FONT FreeSans_27X28;
+extern UG_FONT FreeSans_30X32;
+extern UG_FONT FreeSans_32X35;
+extern UG_FONT FreeSans_39X41;
+extern UG_FONT FreeSans_51X55;
+extern UG_FONT FreeSansBold_20X21;
+extern UG_FONT FreeSansBold_22X24;
+extern UG_FONT FreeSansBold_27X28;
+extern UG_FONT FreeSansBold_30X31;
+extern UG_FONT FreeSansBold_32X33;
+extern UG_FONT FreeSansBold_39X42;
+extern UG_FONT FreeSansBold_52X54;
+extern UG_FONT FreeSansOblique_20X21;
+extern UG_FONT FreeSansOblique_24X25;
+extern UG_FONT FreeSansOblique_29X28;
+extern UG_FONT FreeSansOblique_30X32;
+extern UG_FONT FreeSansOblique_33X35;
+extern UG_FONT FreeSansOblique_41X41;
+extern UG_FONT FreeSansOblique_54X55;
+
 /* -------------------------------------------------------------------------------- */
 /* -- TYPEDEFS                                                                   -- */
 /* -------------------------------------------------------------------------------- */
@@ -673,6 +739,7 @@ typedef struct
 UG_S16 UG_Init( UG_GUI* g, void (*p)(UG_S16, UG_S16, UG_COLOR, bool transparency), UG_S16 x, UG_S16 y );
 UG_S16 UG_SelectGUI( UG_GUI* g );
 void UG_FontSelect( const UG_FONT* font );
+void UG_PrintFontInfo(UG_FONT *font);
 void UG_FillScreen( UG_COLOR c );
 void UG_FillFrame( UG_S16 x1, UG_S16 y1, UG_S16 x2, UG_S16 y2, UG_COLOR c );
 void UG_FillRoundFrame( UG_S16 x1, UG_S16 y1, UG_S16 x2, UG_S16 y2, UG_S16 r, UG_COLOR c );

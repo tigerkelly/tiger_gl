@@ -39,7 +39,7 @@ void *_waitThread(void *param) {
 
 	Timer tt = *(Timer *)param;
 
-	// Need to free what we allocated in the timertask function.
+	// Need to free what we allocated in the tglTimerTask function.
 	free(param);
 
 	// printf("2 tt.msDelay %ld, tt.id %d\n", tt.msDelay, tt.id);
