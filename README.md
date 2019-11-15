@@ -17,12 +17,14 @@ Currently this library has the features I need for my projects but I will add ne
 	- Develop for Raspberry PI
 	- Image Widget
 	- Label Widget
+	- Spinner Widget
 	- Checkbox widget
 	- Radio buttons with grouping
 	- Progress bar
 	- Touch screen support
 	- Many simple font sizes
 	- Support for video
+	- Simple transparency for text.
 	- Auto updating screen. (Only draws what has changed)
 
 The **tiger_gl** library uses two screen buffers. The first screen area is what the **tiger_gl** library updates.  The second screen is the linux frame buffer which is automatically updated from the first screen.  I only update what has changed from the first screen to the linux frame buffer, cutting down on the memory copies.
@@ -143,6 +145,7 @@ void char *tglWidgetGetData(TglWidget *tw) | Retrives the data of a widget.
 tglWidgetEvent(uint16_t x, uint16_t y, uint16_t p, uint16_t t) | Used by the touch thread to notify a widget of an event.
 void tglWidgetDelete(TglWidget *tw) | Deletes a widget.
 TglWidget *tglWidgetImage(uint16_t x, uint16_t y, uint16_t width, uint16_t height) | Create an image widget.
+TglWidget *tglWidgetSpinner(uint16_t x, uint16_t y, uint16_t width, uint16_t height, char *spList) | Create a spinner widget.
 void tglWidgetAddCallback(TglWidget *tw, void (*eCallback)(struct _tglWidget_ *tw, uint16_t x, uint16_t y, uint16_t p), TouchAction action) | Adds a callback to the widget. see example program tiger_gl-test
 void tglWidgetAddIcon(TglWidget *tw, char *iconName) | Add an Icon to the widget if it supports it.
 void tglWidgetSetFont(TglWidget *tw, char *fontName) | Set the font used by a widget.
@@ -173,7 +176,9 @@ On a Raspberry Pi, should run on any version, you will need to install the follo
 
 You will also need to install the **[utils](https://github.com/tigerkelly/utils)** library.  (see that repository for install instructions.)
 
-A test program has been written **[tiger_gl-test](https://github.com/tigerkelly/tiger_gl-test)**
+A simple test program has been written **[tiger_gl-test](https://github.com/tigerkelly/tiger_gl-test)**
+
+Another test program shows how video is displayed **[video-example](https://github.com/tigerkelly/tiger_gl-test)**
 
 Place the above repositories in the same directory.
 
